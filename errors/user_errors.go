@@ -7,6 +7,7 @@ const (
 	CodeUserNotFound
 	CodeUserExists
 	CodeUserNameExists
+	CodePhoneNumberExists
 	CodeUserEmailExists
 	CodePasswordIncorrect
 	CodeUserNotRegister
@@ -23,6 +24,10 @@ func UserExists() *apperror.Error {
 
 func UserNameExists() *apperror.Error {
 	return apperror.NewError(CodeUserNameExists, "username exists")
+}
+
+func PhoneNumberExists() *apperror.Error {
+	return apperror.NewError(CodePhoneNumberExists, "phone number exists")
 }
 
 func UserEmailExists() *apperror.Error {

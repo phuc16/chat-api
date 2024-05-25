@@ -12,6 +12,30 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreateUser godoc
+//
+//	@Summary	CreateUser
+//	@Description
+//	@Tags		authentications
+//	@Produce	json
+//	@Param		request	body		dto.UserCreateReq	true	"request"
+//	@Success	200		{object}	dto.HTTPResp
+//	@Failure	400		{object}	dto.HTTPResp
+//	@Failure	500		{object}	dto.HTTPResp
+//	@Router		/api/auth/register [post]
+func (s *Server) CreateUser(ctx *gin.Context) {
+	req, err := dto.UserCreateReq{}.Bind(ctx)
+	if err != nil {
+		abortWithStatusError(ctx, 400, err)
+		return
+	}
+	_, err = s.UserSvc.CreateUser(ctxFromGin(ctx), req.ToUser(ctxFromGin(ctx)))
+	if err != nil {
+		abortWithStatusError(ctx, 400, err)
+		return
+	}
+}
+
 // Login godoc
 //
 //	@Summary	Login
@@ -154,48 +178,48 @@ func (s *Server) GetUser(ctx *gin.Context) {
 	ctx.AbortWithStatusJSON(200, dto.UserResp{}.FromUser(user))
 }
 
-// CreateUser godoc
-//
-//	@Summary	CreateUser
-//	@Description
-//	@Tags		users
-//	@Produce	json
-//	@Param		request	body		dto.UserCreateReq	true	"request"
-//	@Success	200		{object}	dto.HTTPResp
-//	@Failure	400		{object}	dto.HTTPResp
-//	@Failure	500		{object}	dto.HTTPResp
-//	@Router		/api/users [post]
-func (s *Server) CreateUser(ctx *gin.Context) {
-	req, err := dto.UserCreateReq{}.Bind(ctx)
-	if err != nil {
-		abortWithStatusError(ctx, 400, err)
-		return
-	}
-	_, err = s.UserSvc.CreateUser(ctxFromGin(ctx), req.ToUser(ctxFromGin(ctx)))
-	if err != nil {
-		abortWithStatusError(ctx, 400, err)
-		return
-	}
-}
+// // ActiveUser godoc
+// //
+// //	@Summary	ActiveUser
+// //	@Description
+// //	@Tags		users
+// //	@Produce	json
+// //	@Param		request	body		dto.UserActiveReq	true	"request"
+// //	@Success	200		{object}	dto.HTTPResp
+// //	@Failure	400		{object}	dto.HTTPResp
+// //	@Failure	500		{object}	dto.HTTPResp
+// //	@Router		/api/users/active [put]
+// func (s *Server) ActiveUser(ctx *gin.Context) {
+// 	req, err := dto.UserActiveReq{}.Bind(ctx)
+// 	if err != nil {
+// 		abortWithStatusError(ctx, 400, err)
+// 		return
+// 	}
+// 	_, err = s.UserSvc.ActiveUser(ctxFromGin(ctx), req.ToUser(ctxFromGin(ctx)))
+// 	if err != nil {
+// 		abortWithStatusError(ctx, 400, err)
+// 		return
+// 	}
+// }
 
-// ActiveUser godoc
+// CheckPhoneNumber godoc
 //
-//	@Summary	ActiveUser
+//	@Summary	CheckPhoneNumber
 //	@Description
 //	@Tags		users
 //	@Produce	json
-//	@Param		request	body		dto.UserActiveReq	true	"request"
+//	@Param		request	body		dto.UserCheckPhoneNumberReq	true	"request"
 //	@Success	200		{object}	dto.HTTPResp
 //	@Failure	400		{object}	dto.HTTPResp
 //	@Failure	500		{object}	dto.HTTPResp
-//	@Router		/api/users/active [put]
-func (s *Server) ActiveUser(ctx *gin.Context) {
-	req, err := dto.UserActiveReq{}.Bind(ctx)
+//	@Router		/api/users/reset-password [put]
+func (s *Server) CheckPhoneNumber(ctx *gin.Context) {
+	req, err := dto.UserCheckPhoneNumberReq{}.Bind(ctx)
 	if err != nil {
 		abortWithStatusError(ctx, 400, err)
 		return
 	}
-	_, err = s.UserSvc.ActiveUser(ctxFromGin(ctx), req.ToUser(ctxFromGin(ctx)))
+	_, err = s.UserSvc.CheckPhoneNumber(ctxFromGin(ctx), req.ToUser(ctxFromGin(ctx)))
 	if err != nil {
 		abortWithStatusError(ctx, 400, err)
 		return

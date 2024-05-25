@@ -97,6 +97,48 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/auth/register": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentications"
+                ],
+                "summary": "CreateUser",
+                "parameters": [
+                    {
+                        "description": "request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UserCreateReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
         "/api/otps/request": {
             "post": {
                 "produces": [
@@ -295,46 +337,6 @@ const docTemplate = `{
                     }
                 }
             },
-            "post": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "CreateUser",
-                "parameters": [
-                    {
-                        "description": "request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UserCreateReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    }
-                }
-            },
             "delete": {
                 "produces": [
                     "application/json"
@@ -358,48 +360,6 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/dto.UserDeleteReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/users/active": {
-            "put": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "ActiveUser",
-                "parameters": [
-                    {
-                        "description": "request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UserActiveReq"
                         }
                     }
                 ],
@@ -715,7 +675,7 @@ const docTemplate = `{
         "dto.AccessToken": {
             "type": "object",
             "properties": {
-                "access_token": {
+                "accessToken": {
                     "type": "string"
                 }
             }
@@ -742,32 +702,18 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UserActiveReq": {
+        "dto.UserCheckPhoneNumberReq": {
             "type": "object",
-            "required": [
-                "email",
-                "otp"
-            ],
             "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "otp": {
+                "phoneNumber": {
                     "type": "string"
                 }
             }
         },
         "dto.UserCreateReq": {
             "type": "object",
-            "required": [
-                "avatar_url",
-                "name",
-                "password",
-                "phone",
-                "username"
-            ],
             "properties": {
-                "avatar_url": {
+                "avatarUrl": {
                     "type": "string"
                 },
                 "email": {
@@ -779,7 +725,7 @@ const docTemplate = `{
                 "password": {
                     "type": "string"
                 },
-                "phone": {
+                "phoneNumber": {
                     "type": "string"
                 },
                 "username": {
@@ -789,9 +735,6 @@ const docTemplate = `{
         },
         "dto.UserDeleteReq": {
             "type": "object",
-            "required": [
-                "id"
-            ],
             "properties": {
                 "id": {
                     "type": "string"
@@ -816,7 +759,7 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "phone": {
+                "phoneNumber": {
                     "type": "string"
                 },
                 "status": {
@@ -849,34 +792,22 @@ const docTemplate = `{
         },
         "dto.UserLoginReq": {
             "type": "object",
-            "required": [
-                "password",
-                "username_or_email"
-            ],
             "properties": {
                 "password": {
                     "type": "string"
                 },
-                "username_or_email": {
+                "phoneNumber": {
                     "type": "string"
                 }
             }
         },
         "dto.UserResetPasswordReq": {
             "type": "object",
-            "required": [
-                "email",
-                "new_password",
-                "otp"
-            ],
             "properties": {
-                "email": {
+                "newPassword": {
                     "type": "string"
                 },
-                "new_password": {
-                    "type": "string"
-                },
-                "otp": {
+                "phoneNumber": {
                     "type": "string"
                 }
             }
@@ -914,7 +845,7 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "phone": {
+                "phoneNumber": {
                     "type": "string"
                 },
                 "status": {
@@ -937,7 +868,7 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "phone": {
+                "phoneNumber": {
                     "type": "string"
                 }
             }

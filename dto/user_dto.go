@@ -11,8 +11,8 @@ import (
 )
 
 type UserLoginReq struct {
-	UsernameOrEmail string `json:"username_or_email" binding:"required"`
-	Password        string `json:"password" binding:"required"`
+	PhoneNumber string `json:"phoneNumber"`
+	Password    string `json:"password"`
 }
 
 func (r UserLoginReq) Bind(ctx *gin.Context) (res *UserLoginReq, err error) {
@@ -28,20 +28,19 @@ func (r UserLoginReq) Validate() (err error) {
 
 func (r UserLoginReq) ToUser(ctx context.Context) (res *entity.User) {
 	res = &entity.User{
-		Username: r.UsernameOrEmail,
-		Email:    r.UsernameOrEmail,
-		Password: r.Password,
+		PhoneNumber: r.PhoneNumber,
+		Password:    r.Password,
 	}
 	return res
 }
 
 type UserCreateReq struct {
-	Username  string `json:"username" binding:"required"`
-	Email     string `json:"email" binding:"email"`
-	Password  string `json:"password" binding:"required"`
-	Name      string `json:"name" binding:"required"`
-	Phone     string `json:"phone" binding:"required"`
-	AvatarUrl string `json:"avatar_url" binding:"required"`
+	Username    string `json:"username"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	Name        string `json:"name"`
+	PhoneNumber string `json:"phoneNumber"`
+	AvatarUrl   string `json:"avatarUrl"`
 }
 
 func (r UserCreateReq) Bind(ctx *gin.Context) (res *UserCreateReq, err error) {
@@ -57,19 +56,19 @@ func (r UserCreateReq) Validate() (err error) {
 
 func (r UserCreateReq) ToUser(ctx context.Context) (res *entity.User) {
 	res = &entity.User{
-		Username:  r.Username,
-		Email:     r.Email,
-		Password:  r.Password,
-		Name:      r.Name,
-		Phone:     r.Phone,
-		AvatarUrl: r.AvatarUrl,
+		Username:    r.Username,
+		Email:       r.Email,
+		Password:    r.Password,
+		Name:        r.Name,
+		PhoneNumber: r.PhoneNumber,
+		AvatarUrl:   r.AvatarUrl,
 	}
 	return res
 }
 
 type UserActiveReq struct {
-	Email string `json:"email" binding:"required"`
-	Otp   string `json:"otp" binding:"required"`
+	Email string `json:"email"`
+	Otp   string `json:"otp"`
 }
 
 func (r UserActiveReq) Bind(ctx *gin.Context) (res *UserActiveReq, err error) {
@@ -92,9 +91,8 @@ func (r UserActiveReq) ToUser(ctx context.Context) (res *entity.User) {
 }
 
 type UserResetPasswordReq struct {
-	Email       string `json:"email" binding:"required"`
-	NewPassword string `json:"new_password" binding:"required"`
-	Otp         string `json:"otp" binding:"required"`
+	PhoneNumber string `json:"phoneNumber"`
+	NewPassword string `json:"newPassword"`
 }
 
 func (r UserResetPasswordReq) Bind(ctx *gin.Context) (res *UserResetPasswordReq, err error) {
@@ -110,17 +108,38 @@ func (r UserResetPasswordReq) Validate() (err error) {
 
 func (r UserResetPasswordReq) ToUser(ctx context.Context) (res *entity.User) {
 	res = &entity.User{
-		Email:    r.Email,
-		Password: r.NewPassword,
-		Otp:      r.Otp,
+		PhoneNumber: r.PhoneNumber,
+		Password:    r.NewPassword,
+	}
+	return res
+}
+
+type UserCheckPhoneNumberReq struct {
+	PhoneNumber string `json:"phoneNumber"`
+}
+
+func (r UserCheckPhoneNumberReq) Bind(ctx *gin.Context) (res *UserCheckPhoneNumberReq, err error) {
+	err = ctx.ShouldBindJSON(&r)
+	if err != nil {
+		return nil, apperror.NewError(errors.CodeUnknownError, validationErrorToText(err))
+	}
+	return &r, nil
+}
+func (r UserCheckPhoneNumberReq) Validate() (err error) {
+	return
+}
+
+func (r UserCheckPhoneNumberReq) ToUser(ctx context.Context) (res *entity.User) {
+	res = &entity.User{
+		PhoneNumber: r.PhoneNumber,
 	}
 	return res
 }
 
 type UserUpdateReq struct {
-	Name      string `json:"name"`
-	Phone     string `json:"phone"`
-	AvatarUrl string `json:"avatar_url"`
+	Name        string `json:"name"`
+	PhoneNumber string `json:"phoneNumber"`
+	AvatarUrl   string `json:"avatar_url"`
 }
 
 func (r UserUpdateReq) Bind(ctx *gin.Context) (*UserUpdateReq, error) {
@@ -137,16 +156,16 @@ func (r UserUpdateReq) Validate() (err error) {
 
 func (r UserUpdateReq) ToUser(ctx context.Context) (res *entity.User) {
 	res = &entity.User{
-		ID:        entity.GetUserFromContext(ctx).ID,
-		Name:      r.Name,
-		Phone:     r.Phone,
-		AvatarUrl: r.AvatarUrl,
+		ID:          entity.GetUserFromContext(ctx).ID,
+		Name:        r.Name,
+		PhoneNumber: r.PhoneNumber,
+		AvatarUrl:   r.AvatarUrl,
 	}
 	return res
 }
 
 type UserDeleteReq struct {
-	ID string `json:"id" binding:"required"`
+	ID string `json:"id"`
 }
 
 func (r UserDeleteReq) Bind(ctx *gin.Context) (*UserDeleteReq, error) {
@@ -173,7 +192,7 @@ type UserResp struct {
 	Username       string          `json:"username"`
 	Email          string          `json:"email"`
 	Name           string          `json:"name"`
-	Phone          string          `json:"phone"`
+	PhoneNumber    string          `json:"phoneNumber"`
 	AvatarUrl      string          `json:"avatar_url"`
 	Status         string          `json:"status"`
 	Friends        []*UserInfoResp `json:"friends"`
@@ -189,7 +208,7 @@ func (r UserResp) FromUser(e *entity.User) *UserResp {
 		Username:       e.Username,
 		Email:          e.Email,
 		Name:           e.Name,
-		Phone:          e.Phone,
+		PhoneNumber:    e.PhoneNumber,
 		AvatarUrl:      e.AvatarUrl,
 		Status:         e.Status,
 		Friends:        fromFriendList(e.Friends),
@@ -226,7 +245,7 @@ type UserInfoResp struct {
 	Username     string    `json:"username"`
 	Email        string    `json:"email"`
 	Name         string    `json:"name"`
-	Phone        string    `json:"phone"`
+	PhoneNumber  string    `json:"phoneNumber"`
 	AvatarUrl    string    `json:"avatar_url"`
 	Status       string    `json:"status"`
 	LastLoggedIn time.Time `json:"last_logged_in"`
@@ -241,7 +260,7 @@ func (r UserInfoResp) FromUser(e *entity.User) *UserInfoResp {
 		Username:     e.Username,
 		Email:        e.Email,
 		Name:         e.Name,
-		Phone:        e.Phone,
+		PhoneNumber:  e.PhoneNumber,
 		AvatarUrl:    e.AvatarUrl,
 		Status:       e.Status,
 		LastLoggedIn: e.LastLoggedIn,

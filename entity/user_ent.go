@@ -23,7 +23,7 @@ type User struct {
 	Email            string     `bson:"email"`
 	Password         string     `bson:"password"`
 	Name             string     `bson:"name"`
-	Phone            string     `bson:"phone"`
+	PhoneNumber      string     `bson:"phone_number"`
 	AvatarUrl        string     `bson:"avatar_url"`
 	Status           string     `bson:"status"`
 	FriendRequestIds []string   `bson:"friend_request_ids"`
@@ -63,7 +63,7 @@ func (e *User) OnUserCreated(ctx context.Context, user *User, eventTime time.Tim
 	e.Email = user.Email
 	e.Password = utils.HashPassword(user.Password)
 	e.Name = user.Name
-	e.Phone = user.Phone
+	e.PhoneNumber = user.PhoneNumber
 	e.AvatarUrl = user.AvatarUrl
 	e.Status = UserStatusOffline
 	e.FriendRequestIds = make([]string, 0)
@@ -87,8 +87,8 @@ func (e *User) OnUserUpdated(ctx context.Context, user *User, eventTime time.Tim
 	if user.Name != "" {
 		e.Name = user.Name
 	}
-	if user.Phone != "" {
-		e.Phone = user.Phone
+	if user.PhoneNumber != "" {
+		e.PhoneNumber = user.PhoneNumber
 	}
 	if user.AvatarUrl != "" {
 		e.AvatarUrl = user.AvatarUrl

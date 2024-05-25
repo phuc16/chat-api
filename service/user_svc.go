@@ -29,13 +29,13 @@ func (s *UserService) Login(ctx context.Context, user *entity.User) (accessToken
 	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
 	defer span.End()
 
-	dbUser, err := s.UserRepo.GetUserByUserNameOrEmail(ctx, user.Username, user.Email)
+	dbUser, err := s.UserRepo.GetUserByPhoneNumber(ctx, user.PhoneNumber)
 	if err != nil {
 		return
 	}
-	if !dbUser.IsActive {
-		return "", errors.UserInactive()
-	}
+	// if !dbUser.IsActive {
+	// 	return "", errors.UserInactive()
+	// }
 	if !utils.VerifyPassword(user.Password, dbUser.Password) {
 		err = errors.PasswordIncorrect()
 		return
@@ -55,12 +55,13 @@ func (s *UserService) CreateToken(ctx context.Context, user *entity.User) (acces
 
 	duration := time.Duration(int32(config.Cfg.HTTP.AccessTokenDuration)) * time.Minute
 	appToken := &entity.Token{
-		ID:       utils.NewID(),
-		UserID:   user.ID,
-		Name:     user.Name,
-		UserName: user.Username,
-		Email:    user.Email,
-		Type:     entity.AccessTokenType,
+		ID:          utils.NewID(),
+		UserID:      user.ID,
+		PhoneNumber: user.PhoneNumber,
+		Name:        user.Name,
+		UserName:    user.Username,
+		Email:       user.Email,
+		Type:        entity.AccessTokenType,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(duration).Unix(),
 			IssuedAt:  time.Now().Unix(),
@@ -129,7 +130,7 @@ func (s *UserService) CreateUser(ctx context.Context, e *entity.User) (res any, 
 	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
 	defer span.End()
 
-	err = s.UserRepo.CheckUserNameAndEmailExist(ctx, e.Username, e.Email)
+	err = s.UserRepo.CheckPhoneNumberExist(ctx, e.PhoneNumber)
 	if err != nil {
 		return
 	}
@@ -145,47 +146,47 @@ func (s *UserService) CreateUser(ctx context.Context, e *entity.User) (res any, 
 	if err != nil {
 		return
 	}
-	_, err = s.OtpSvc.GenerateOtp(ctx, user.Email)
+	// _, err = s.OtpSvc.GenerateOtp(ctx, user.Email)
 	return
 }
 
-func (s *UserService) ActiveUser(ctx context.Context, e *entity.User) (res any, err error) {
+func (s *UserService) CheckPhoneNumber(ctx context.Context, user *entity.User) (res any, err error) {
 	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
 	defer span.End()
 
-	otp, err := s.OtpSvc.VerifyOtp(ctx, &entity.Otp{
-		Email: e.Email,
-		Code:  e.Otp,
-	})
-	if err != nil {
-		return
-	}
-	dbUser, err := s.UserRepo.GetInactiveUser(ctx, e.Email)
-	if err != nil {
-		return
-	}
-	dbUser.OnUserActive(ctx)
-	err = s.UserRepo.UpdateUser(ctx, dbUser)
-	if err != nil {
-		return
-	}
-
-	err = s.OtpSvc.DeleteOtp(ctx, otp)
-	return
+	return s.UserRepo.GetUserByPhoneNumber(ctx, user.PhoneNumber)
 }
+
+// func (s *UserService) ActiveUser(ctx context.Context, e *entity.User) (res any, err error) {
+// 	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
+// 	defer span.End()
+
+// 	otp, err := s.OtpSvc.VerifyOtp(ctx, &entity.Otp{
+// 		Email: e.Email,
+// 		Code:  e.Otp,
+// 	})
+// 	if err != nil {
+// 		return
+// 	}
+// 	dbUser, err := s.UserRepo.GetInactiveUser(ctx, e.Email)
+// 	if err != nil {
+// 		return
+// 	}
+// 	dbUser.OnUserActive(ctx)
+// 	err = s.UserRepo.UpdateUser(ctx, dbUser)
+// 	if err != nil {
+// 		return
+// 	}
+
+// 	err = s.OtpSvc.DeleteOtp(ctx, otp)
+// 	return
+// }
 
 func (s *UserService) ResetPassword(ctx context.Context, e *entity.User) (res any, err error) {
 	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
 	defer span.End()
 
-	otp, err := s.OtpSvc.VerifyOtp(ctx, &entity.Otp{
-		Email: e.Email,
-		Code:  e.Otp,
-	})
-	if err != nil {
-		return
-	}
-	dbUser, err := s.UserRepo.GetUserByEmail(ctx, e.Email)
+	dbUser, err := s.UserRepo.GetUserByPhoneNumber(ctx, e.PhoneNumber)
 	if err != nil {
 		return
 	}
@@ -195,7 +196,6 @@ func (s *UserService) ResetPassword(ctx context.Context, e *entity.User) (res an
 		return
 	}
 
-	err = s.OtpSvc.DeleteOtp(ctx, otp)
 	return
 }
 

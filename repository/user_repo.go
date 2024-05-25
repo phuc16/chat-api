@@ -87,9 +87,9 @@ func (r *Repo) GetUserById(ctx context.Context, id string) (res *entity.User, er
 	if len(d) <= 0 {
 		return nil, errors.UserNotFound()
 	}
-	if !d[0].IsActive {
-		return nil, errors.UserInactive()
-	}
+	// if !d[0].IsActive {
+	// 	return nil, errors.UserInactive()
+	// }
 	return d[0], nil
 }
 func (r *Repo) GetUserByEmail(ctx context.Context, email string) (res *entity.User, err error) {
@@ -116,9 +116,9 @@ func (r *Repo) GetUserByEmail(ctx context.Context, email string) (res *entity.Us
 	if len(d) <= 0 {
 		return nil, errors.UserNotFound()
 	}
-	if !d[0].IsActive {
-		return nil, errors.UserInactive()
-	}
+	// if !d[0].IsActive {
+	// 	return nil, errors.UserInactive()
+	// }
 	return d[0], nil
 }
 
@@ -146,9 +146,9 @@ func (r *Repo) GetUserByUserName(ctx context.Context, username string) (res *ent
 	if len(d) <= 0 {
 		return nil, errors.UserNotFound()
 	}
-	if !d[0].IsActive {
-		return nil, errors.UserInactive()
-	}
+	// if !d[0].IsActive {
+	// 	return nil, errors.UserInactive()
+	// }
 	return d[0], nil
 }
 
@@ -168,22 +168,20 @@ func (r *Repo) GetUserByUserNameOrEmail(ctx context.Context, username string, em
 		}
 		return nil, err
 	}
-	if !d.IsActive {
-		return nil, errors.UserInactive()
-	}
+	// if !d.IsActive {
+	// 	return nil, errors.UserInactive()
+	// }
 	return &d, nil
 }
 
-func (r *Repo) GetInactiveUser(ctx context.Context, email string) (res *entity.User, err error) {
+func (r *Repo) GetUserByPhoneNumber(ctx context.Context, phoneNumber string) (res *entity.User, err error) {
 	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
 	defer span.End()
 	defer errors.WrapDatabaseError(&err)
 
 	var d entity.User
-	filter := bson.D{{"$and", []interface{}{
-		bson.D{{"email", email}},
-		bson.D{{"is_active", false}},
-		bson.D{{"deleted_at", nil}},
+	filter := bson.D{{"$or", []interface{}{
+		bson.D{{"phone_number", phoneNumber}, {"deleted_at", nil}},
 	}}}
 	if err := r.userColl().FindOne(ctx, filter).Decode(&d); err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -191,8 +189,31 @@ func (r *Repo) GetInactiveUser(ctx context.Context, email string) (res *entity.U
 		}
 		return nil, err
 	}
+	// if !d.IsActive {
+	// 	return nil, errors.UserInactive()
+	// }
 	return &d, nil
 }
+
+// func (r *Repo) GetInactiveUser(ctx context.Context, email string) (res *entity.User, err error) {
+// 	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
+// 	defer span.End()
+// 	defer errors.WrapDatabaseError(&err)
+
+// 	var d entity.User
+// 	filter := bson.D{{"$and", []interface{}{
+// 		bson.D{{"email", email}},
+// 		bson.D{{"is_active", false}},
+// 		bson.D{{"deleted_at", nil}},
+// 	}}}
+// 	if err := r.userColl().FindOne(ctx, filter).Decode(&d); err != nil {
+// 		if err == mongo.ErrNoDocuments {
+// 			return nil, errors.UserNotFound()
+// 		}
+// 		return nil, err
+// 	}
+// 	return &d, nil
+// }
 
 func (r *Repo) CheckUserNameAndEmailExist(ctx context.Context, username string, email string) (err error) {
 	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
@@ -223,6 +244,27 @@ func (r *Repo) CheckUserNameAndEmailExist(ctx context.Context, username string, 
 	}
 	if d.ID != "" {
 		return errors.UserEmailExists()
+	}
+	return
+}
+
+func (r *Repo) CheckPhoneNumberExist(ctx context.Context, phoneNumber string) (err error) {
+	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
+	defer span.End()
+	defer errors.WrapDatabaseError(&err)
+
+	var d entity.User
+	filter := bson.D{
+		{"phone_number", phoneNumber},
+		{"deleted_at", nil},
+	}
+	if err2 := r.userColl().FindOne(ctx, filter).Decode(&d); err2 != nil {
+		if err2 != mongo.ErrNoDocuments {
+			return err2
+		}
+	}
+	if d.ID != "" {
+		return errors.PhoneNumberExists()
 	}
 	return
 }
@@ -277,7 +319,7 @@ func (r *Repo) GetUserList(ctx context.Context, params *QueryParams) (res []*ent
 		pipeLine = append(pipeLine, matchFieldPipeline(k, v))
 	}
 	pipeLine = append(pipeLine, matchFieldPipeline("deleted_at", nil))
-	pipeLine = append(pipeLine, matchFieldPipeline("is_active", true))
+	// pipeLine = append(pipeLine, matchFieldPipeline("is_active", true))
 
 	cursor, err := coll.Aggregate(ctx, append(pipeLine, bson.D{{"$count", "total_count"}}))
 	if err != nil {
@@ -313,7 +355,7 @@ func (r *Repo) GetAllUsers(ctx context.Context) (res []*entity.User, err error) 
 
 	pipeLine := mongo.Pipeline{}
 	pipeLine = append(pipeLine, matchFieldPipeline("deleted_at", nil))
-	pipeLine = append(pipeLine, matchFieldPipeline("is_active", true))
+	// pipeLine = append(pipeLine, matchFieldPipeline("is_active", true))
 	pipeLine = append(pipeLine, friendsLookupPipeline)
 
 	cursor, err := coll.Aggregate(ctx, pipeLine, collationAggregateOption)
