@@ -9,12 +9,13 @@ const (
 )
 
 type Token struct {
-	ID       string `json:"id" bson:"id"`
-	UserID   string `json:"user_id" bson:"user_id"`
-	Name     string `json:"name" bson:"name"`
-	UserName string `json:"user_name" bson:"user_name"`
-	Email    string `json:"email" bson:"email"`
-	Type     string `json:"-" bson:"type"`
+	ID          string `json:"id" bson:"id"`
+	UserID      string `json:"user_id" bson:"user_id"`
+	PhoneNumber string `bson:"phone_number"`
+	Name        string `json:"name" bson:"name"`
+	UserName    string `json:"user_name" bson:"user_name"`
+	Email       string `json:"email" bson:"email"`
+	Type        string `json:"-" bson:"type"`
 	jwt.StandardClaims
 }
 

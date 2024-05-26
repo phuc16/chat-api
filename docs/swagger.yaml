@@ -1,7 +1,7 @@
 definitions:
   dto.AccessToken:
     properties:
-      access_token:
+      accessToken:
         type: string
     type: object
   dto.HTTPResp:
@@ -18,19 +18,14 @@ definitions:
     required:
     - email
     type: object
-  dto.UserActiveReq:
+  dto.UserCheckPhoneNumberReq:
     properties:
-      email:
+      phoneNumber:
         type: string
-      otp:
-        type: string
-    required:
-    - email
-    - otp
     type: object
   dto.UserCreateReq:
     properties:
-      avatar_url:
+      avatarUrl:
         type: string
       email:
         type: string
@@ -38,23 +33,15 @@ definitions:
         type: string
       password:
         type: string
-      phone:
+      phoneNumber:
         type: string
       username:
         type: string
-    required:
-    - avatar_url
-    - name
-    - password
-    - phone
-    - username
     type: object
   dto.UserDeleteReq:
     properties:
       id:
         type: string
-    required:
-    - id
     type: object
   dto.UserInfoResp:
     properties:
@@ -68,7 +55,7 @@ definitions:
         type: string
       name:
         type: string
-      phone:
+      phoneNumber:
         type: string
       status:
         type: string
@@ -92,24 +79,15 @@ definitions:
     properties:
       password:
         type: string
-      username_or_email:
+      phoneNumber:
         type: string
-    required:
-    - password
-    - username_or_email
     type: object
   dto.UserResetPasswordReq:
     properties:
-      email:
+      newPassword:
         type: string
-      new_password:
+      phoneNumber:
         type: string
-      otp:
-        type: string
-    required:
-    - email
-    - new_password
-    - otp
     type: object
   dto.UserResp:
     properties:
@@ -133,7 +111,7 @@ definitions:
         type: string
       name:
         type: string
-      phone:
+      phoneNumber:
         type: string
       status:
         type: string
@@ -148,7 +126,7 @@ definitions:
         type: string
       name:
         type: string
-      phone:
+      phoneNumber:
         type: string
     type: object
 info:
@@ -205,6 +183,33 @@ paths:
           schema:
             $ref: '#/definitions/dto.HTTPResp'
       summary: Logout
+      tags:
+      - authentications
+  /api/auth/register:
+    post:
+      parameters:
+      - description: request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserCreateReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: CreateUser
       tags:
       - authentications
   /api/otps/request:
@@ -335,32 +340,6 @@ paths:
           schema:
             $ref: '#/definitions/dto.HTTPResp'
       summary: GetUserList
-      tags:
-      - users
-    post:
-      parameters:
-      - description: request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UserCreateReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-      summary: CreateUser
       tags:
       - users
     put:
@@ -522,33 +501,6 @@ paths:
           schema:
             $ref: '#/definitions/dto.HTTPResp'
       summary: SendFriendRequest
-      tags:
-      - users
-  /api/users/active:
-    put:
-      parameters:
-      - description: request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UserActiveReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-      summary: ActiveUser
       tags:
       - users
   /api/users/friends/suggest:

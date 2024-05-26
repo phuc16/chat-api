@@ -12,6 +12,7 @@ import (
 	"app/service"
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -43,14 +44,15 @@ func (s *Server) Routes(router *gin.RouterGroup) {
 		router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 
+	router.POST("/auth/register", s.CreateUser)
 	router.POST("/auth/login", s.Login)
 	router.GET("/auth/logout", s.Logout)
 
 	router.GET("/user/profile", s.Authenticate, s.GetProfile)
 	router.GET("/users", s.Authenticate, s.GetUserList)
 	router.GET("/users/:id", s.Authenticate, s.GetUser)
-	router.POST("/users", s.CreateUser)
-	router.PUT("/users/active", s.ActiveUser)
+	// router.PUT("/users/active", s.ActiveUser)
+	router.POST("/users/check-phone", s.CheckPhoneNumber)
 	router.PUT("/users/reset-password", s.ResetPassword)
 	router.PUT("/users", s.Authenticate, s.UpdateUser)
 	router.DELETE("/users", s.Authenticate, s.DeleteUser)
@@ -86,12 +88,14 @@ func (s *Server) Start() (err error) {
 
 	app := gin.New()
 	app.Use(gin.Recovery())
+	log.Println(config.Cfg.HTTP)
 	if len(config.Cfg.HTTP.AllowOrigins) > 0 {
 		corsConfig := cors.DefaultConfig()
 		corsConfig.AllowOrigins = config.Cfg.HTTP.AllowOrigins
 		corsConfig.AllowCredentials = true
 		corsConfig.AllowHeaders = append(corsConfig.AllowHeaders, "Authorization")
 		app.Use(cors.New(corsConfig))
+		log.Println(corsConfig)
 	}
 	app.Use(otelgin.Middleware("app-api"))
 	app.Use(utils.HTTPLogger)
