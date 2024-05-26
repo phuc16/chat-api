@@ -49,3 +49,18 @@ type IOtpSvc interface {
 	VerifyOtp(ctx context.Context, e *entity.Otp) (res *entity.Otp, err error)
 	DeleteOtp(ctx context.Context, e *entity.Otp) (err error)
 }
+
+type IChatRepo interface {
+	SaveChat(ctx context.Context, chat *entity.Chat) (err error)
+	GetChatById(ctx context.Context, id string) (res *entity.Chat, err error)
+	GetChatList(ctx context.Context, params *repository.QueryParams) (res []*entity.Chat, total int64, err error)
+	UpdateChat(ctx context.Context, chat *entity.Chat) (err error)
+	AddToGroup(ctx context.Context, chat *entity.Chat) (err error)
+	RemoveFromGroup(ctx context.Context, chat *entity.Chat) (err error)
+}
+
+type IMessageRepo interface {
+	ExecTransaction(ctx context.Context, fn func(ctx context.Context) (any, error)) (any, error)
+	SaveMessage(ctx context.Context, message *entity.Message) (err error)
+	GetMessageListByChatId(ctx context.Context, chatId string, params *repository.QueryParams) (res []*entity.Message, total int64, err error)
+}

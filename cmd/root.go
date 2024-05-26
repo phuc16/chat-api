@@ -57,8 +57,10 @@ var rootCmd = &cobra.Command{
 
 		otpSvc := service.NewOtpService(repo, repo)
 		userSvc := service.NewUserService(otpSvc, repo, repo)
+		chatSvc := service.NewChatService(repo)
+		messageSvc := service.NewMessageService(repo, repo)
 
-		httpSrv := http.NewServer(userSvc, otpSvc)
+		httpSrv := http.NewServer(userSvc, otpSvc, chatSvc, messageSvc)
 		quit := make(chan error)
 		go func() {
 			err := httpSrv.Start()

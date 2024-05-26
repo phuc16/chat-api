@@ -92,6 +92,7 @@ func (r *Repo) GetUserById(ctx context.Context, id string) (res *entity.User, er
 	}
 	return d[0], nil
 }
+
 func (r *Repo) GetUserByEmail(ctx context.Context, email string) (res *entity.User, err error) {
 	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
 	defer span.End()
@@ -333,7 +334,7 @@ func (r *Repo) UpdateUser(ctx context.Context, user *entity.User) (err error) {
 
 	filter := bson.D{{"id", user.ID}}
 	update := bson.M{"$set": user}
-	_, err = r.userColl().UpdateOne(context.Background(), filter, update)
+	_, err = r.userColl().UpdateOne(ctx, filter, update)
 	if err != nil {
 		return err
 	}
@@ -347,7 +348,7 @@ func (r *Repo) DeleteUser(ctx context.Context, user *entity.User) (err error) {
 
 	filter := bson.D{{"id", user.ID}}
 	update := bson.M{"$set": user}
-	_, err = r.userColl().UpdateOne(context.Background(), filter, update)
+	_, err = r.userColl().UpdateOne(ctx, filter, update)
 	if err != nil {
 		return err
 	}
@@ -374,7 +375,7 @@ func (r *Repo) AddFriendRequest(ctx context.Context, user *entity.User, friend *
 
 	filter := bson.D{{"id", user.ID}}
 	update := bson.M{"$addToSet": bson.M{"friend_request_ids": friend.ID}}
-	_, err = r.userColl().UpdateOne(context.Background(), filter, update)
+	_, err = r.userColl().UpdateOne(ctx, filter, update)
 	if err != nil {
 		return err
 	}
@@ -388,7 +389,7 @@ func (r *Repo) RemoveFriendRequest(ctx context.Context, user *entity.User, frien
 
 	filter := bson.D{{"id", user.ID}}
 	update := bson.M{"$pull": bson.M{"friend_request_ids": friend.ID}}
-	_, err = r.userColl().UpdateOne(context.Background(), filter, update)
+	_, err = r.userColl().UpdateOne(ctx, filter, update)
 	if err != nil {
 		return err
 	}
@@ -402,7 +403,7 @@ func (r *Repo) AddFriend(ctx context.Context, user *entity.User, friend *entity.
 
 	filter := bson.D{{"id", user.ID}}
 	update := bson.M{"$addToSet": bson.M{"friend_ids": friend.ID}}
-	_, err = r.userColl().UpdateOne(context.Background(), filter, update)
+	_, err = r.userColl().UpdateOne(ctx, filter, update)
 	if err != nil {
 		return err
 	}
@@ -416,7 +417,7 @@ func (r *Repo) RemoveFriend(ctx context.Context, user *entity.User, friend *enti
 
 	filter := bson.D{{"id", user.ID}}
 	update := bson.M{"$pull": bson.M{"friend_ids": friend.ID}}
-	_, err = r.userColl().UpdateOne(context.Background(), filter, update)
+	_, err = r.userColl().UpdateOne(ctx, filter, update)
 	if err != nil {
 		return err
 	}

@@ -25,12 +25,14 @@ import (
 )
 
 type Server struct {
-	UserSvc *service.UserService
-	OtpSvc  *service.OtpService
+	UserSvc    *service.UserService
+	OtpSvc     *service.OtpService
+	ChatSvc    *service.ChatService
+	MessageSvc *service.MessageService
 }
 
-func NewServer(userSvc *service.UserService, otpSvc *service.OtpService) *Server {
-	return &Server{UserSvc: userSvc, OtpSvc: otpSvc}
+func NewServer(userSvc *service.UserService, otpSvc *service.OtpService, chatSvc *service.ChatService, messageSvc *service.MessageService) *Server {
+	return &Server{UserSvc: userSvc, OtpSvc: otpSvc, ChatSvc: chatSvc, MessageSvc: messageSvc}
 }
 
 func (s *Server) Routes(router *gin.RouterGroup) {
@@ -57,6 +59,16 @@ func (s *Server) Routes(router *gin.RouterGroup) {
 	router.POST("/users/:id/friends/accept", s.Authenticate, s.AcceptFriendRequest)
 	router.DELETE("/users/:id/friends/remove", s.Authenticate, s.RemoveFriend)
 	router.GET("/users/friends/suggest", s.Authenticate, s.SuggestFriend)
+
+	router.POST("/chat", s.Authenticate, s.CreateChat)
+	router.GET("/chat", s.Authenticate, s.GetChatList)
+	router.POST("/chat/group", s.Authenticate, s.CreateGroup)
+	router.PUT("/chat/group/rename", s.Authenticate, s.RenameGroup)
+	router.PUT("/chat/groupAdd", s.Authenticate, s.AddToGroup)
+	router.PUT("/chat/groupRemove", s.Authenticate, s.RemoveFromGroup)
+
+	router.POST("/message", s.Authenticate, s.SendMessage)
+	router.GET("/messages/chat_id", s.Authenticate, s.GetMessageListByChatId)
 
 	router.POST("/otps/request", s.RequestOtp)
 }

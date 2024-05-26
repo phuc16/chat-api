@@ -20,6 +20,7 @@ func (r OtpReq) Bind(ctx *gin.Context) (res *OtpReq, err error) {
 	}
 	return &r, nil
 }
+
 func (r OtpReq) Validate() (err error) {
 	return
 }

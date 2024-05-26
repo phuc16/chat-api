@@ -76,7 +76,7 @@ func (r *Repo) DeleteOtp(ctx context.Context, otp *entity.Otp) (err error) {
 	defer errors.WrapDatabaseError(&err)
 
 	filter := bson.D{{"id", otp.ID}}
-	_, err = r.otpColl().DeleteOne(context.Background(), filter)
+	_, err = r.otpColl().DeleteOne(ctx, filter)
 	if err != nil {
 		return err
 	}
