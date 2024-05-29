@@ -8,6 +8,7 @@ import (
 	"app/pkg/utils"
 	"context"
 	"strings"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,31 +19,31 @@ func (r *Repo) userColl() *mongo.Collection {
 	return r.db.Database(config.Cfg.DB.DBName).Collection("users")
 }
 
-func (r *Repo) CreateUserIndexes(ctx context.Context) ([]string, error) {
-	indexes, err := r.userColl().Indexes().CreateMany(ctx, []mongo.IndexModel{
-		{Keys: bson.D{
-			{"id", 1},
-			{"deleted_at", 1},
-		}, Options: options.Index().SetUnique(true)},
-		{Keys: bson.D{
-			{"username", 1},
-			{"deleted_at", 1},
-		}, Options: options.Index().SetUnique(true)},
-		{Keys: bson.D{
-			{"email", 1},
-			{"deleted_at", 1},
-		}, Options: options.Index().SetUnique(true)},
-		{Keys: bson.D{
-			{"name", "text"},
-			{"username", "text"},
-			{"email", "text"},
-		}},
-	})
-	if err != nil {
-		return nil, err
-	}
-	return indexes, nil
-}
+// func (r *Repo) CreateUserIndexes(ctx context.Context) ([]string, error) {
+// 	indexes, err := r.userColl().Indexes().CreateMany(ctx, []mongo.IndexModel{
+// 		{Keys: bson.D{
+// 			{"id", 1},
+// 			{"deleted_at", 1},
+// 		}, Options: options.Index().SetUnique(true)},
+// 		{Keys: bson.D{
+// 			{"username", 1},
+// 			{"deleted_at", 1},
+// 		}, Options: options.Index().SetUnique(true)},
+// 		{Keys: bson.D{
+// 			{"email", 1},
+// 			{"deleted_at", 1},
+// 		}, Options: options.Index().SetUnique(true)},
+// 		{Keys: bson.D{
+// 			{"name", "text"},
+// 			{"username", "text"},
+// 			{"email", "text"},
+// 		}},
+// 	})
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return indexes, nil
+// }
 
 func (r *Repo) SaveUser(ctx context.Context, user *entity.User) (err error) {
 	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
@@ -63,403 +64,116 @@ func (r *Repo) SaveUser(ctx context.Context, user *entity.User) (err error) {
 	return nil
 }
 
-func (r *Repo) GetUserById(ctx context.Context, id string) (res *entity.User, err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	var d []*entity.User
-
-	pipeLine := mongo.Pipeline{}
-	pipeLine = append(pipeLine, matchFieldPipeline("id", id))
-	pipeLine = append(pipeLine, matchFieldPipeline("deleted_at", nil))
-	pipeLine = append(pipeLine, limitPipeline(1))
-	pipeLine = append(pipeLine, friendsLookupPipeline)
-	pipeLine = append(pipeLine, friendRequestsLookupPipeline)
-
-	cursor, err := r.userColl().Aggregate(ctx, pipeLine, collationAggregateOption)
+func (r *Repo) FindUserByID(ctx context.Context, id string) (*entity.User, error) {
+	filter := bson.M{"id": id}
+	findOptions := options.FindOne().SetSort(bson.D{{"conversations.updated_at", -1}})
+	var user entity.User
+	err := r.userColl().FindOne(ctx, filter, findOptions).Decode(&user)
 	if err != nil {
-		return nil, err
-	}
-	if err = cursor.All(ctx, &d); err != nil {
-		return nil, err
-	}
-	if len(d) <= 0 {
-		return nil, errors.UserNotFound()
-	}
-	// if !d[0].IsActive {
-	// 	return nil, errors.UserInactive()
-	// }
-	return d[0], nil
-}
-
-func (r *Repo) GetUserByEmail(ctx context.Context, email string) (res *entity.User, err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	var d []*entity.User
-
-	pipeLine := mongo.Pipeline{}
-	pipeLine = append(pipeLine, matchFieldPipeline("email", email))
-	pipeLine = append(pipeLine, matchFieldPipeline("deleted_at", nil))
-	pipeLine = append(pipeLine, limitPipeline(1))
-	pipeLine = append(pipeLine, friendsLookupPipeline)
-	pipeLine = append(pipeLine, friendRequestsLookupPipeline)
-
-	cursor, err := r.userColl().Aggregate(ctx, pipeLine, collationAggregateOption)
-	if err != nil {
-		return nil, err
-	}
-	if err = cursor.All(ctx, &d); err != nil {
-		return nil, err
-	}
-	if len(d) <= 0 {
-		return nil, errors.UserNotFound()
-	}
-	// if !d[0].IsActive {
-	// 	return nil, errors.UserInactive()
-	// }
-	return d[0], nil
-}
-
-func (r *Repo) GetUserByUserName(ctx context.Context, username string) (res *entity.User, err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	var d []*entity.User
-
-	pipeLine := mongo.Pipeline{}
-	pipeLine = append(pipeLine, matchFieldPipeline("username", username))
-	pipeLine = append(pipeLine, matchFieldPipeline("deleted_at", nil))
-	pipeLine = append(pipeLine, limitPipeline(1))
-	pipeLine = append(pipeLine, friendsLookupPipeline)
-	pipeLine = append(pipeLine, friendRequestsLookupPipeline)
-
-	cursor, err := r.userColl().Aggregate(ctx, pipeLine, collationAggregateOption)
-	if err != nil {
-		return nil, err
-	}
-	if err = cursor.All(ctx, &d); err != nil {
-		return nil, err
-	}
-	if len(d) <= 0 {
-		return nil, errors.UserNotFound()
-	}
-	// if !d[0].IsActive {
-	// 	return nil, errors.UserInactive()
-	// }
-	return d[0], nil
-}
-
-func (r *Repo) GetUserByUserNameOrEmail(ctx context.Context, username string, email string) (res *entity.User, err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	var d entity.User
-	filter := bson.D{{"$or", []interface{}{
-		bson.D{{"username", username}, {"deleted_at", nil}},
-		bson.D{{"email", email}, {"deleted_at", nil}},
-	}}}
-	if err := r.userColl().FindOne(ctx, filter).Decode(&d); err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, errors.UserNotFound()
 		}
 		return nil, err
 	}
-	// if !d.IsActive {
-	// 	return nil, errors.UserInactive()
-	// }
-	return &d, nil
+	return &user, err
 }
 
-func (r *Repo) GetUserByPhoneNumber(ctx context.Context, phoneNumber string) (res *entity.User, err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	var d entity.User
-	filter := bson.D{{"$or", []interface{}{
-		bson.D{{"phone_number", phoneNumber}, {"deleted_at", nil}},
-	}}}
-	if err := r.userColl().FindOne(ctx, filter).Decode(&d); err != nil {
-		if err == mongo.ErrNoDocuments {
-			return nil, errors.UserNotFound()
-		}
-		return nil, err
-	}
-	// if !d.IsActive {
-	// 	return nil, errors.UserInactive()
-	// }
-	return &d, nil
+func (r *Repo) AppendFriendRequest(ctx context.Context, id string, friendRequest entity.FriendRequest) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": id}
+	update := bson.M{"$push": bson.M{"friend_requests": friendRequest}}
+	return r.userColl().UpdateOne(ctx, filter, update)
 }
 
-// func (r *Repo) GetInactiveUser(ctx context.Context, email string) (res *entity.User, err error) {
-// 	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-// 	defer span.End()
-// 	defer errors.WrapDatabaseError(&err)
-
-// 	var d entity.User
-// 	filter := bson.D{{"$and", []interface{}{
-// 		bson.D{{"email", email}},
-// 		bson.D{{"is_active", false}},
-// 		bson.D{{"deleted_at", nil}},
-// 	}}}
-// 	if err := r.userColl().FindOne(ctx, filter).Decode(&d); err != nil {
-// 		if err == mongo.ErrNoDocuments {
-// 			return nil, errors.UserNotFound()
-// 		}
-// 		return nil, err
-// 	}
-// 	return &d, nil
-// }
-
-func (r *Repo) CheckUserNameAndEmailExist(ctx context.Context, username string, email string) (err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	var d entity.User
-	filter := bson.D{
-		{"username", username},
-		{"deleted_at", nil},
-	}
-	if err2 := r.userColl().FindOne(ctx, filter).Decode(&d); err2 != nil {
-		if err2 != mongo.ErrNoDocuments {
-			return err2
-		}
-	}
-	if d.ID != "" {
-		return errors.UserNameExists()
-	}
-	filter = bson.D{
-		{"email", email},
-		{"deleted_at", nil},
-	}
-	if err2 := r.userColl().FindOne(ctx, filter).Decode(&d); err2 != nil {
-		if err2 != mongo.ErrNoDocuments {
-			return err2
-		}
-	}
-	if d.ID != "" {
-		return errors.UserEmailExists()
-	}
-	return
+func (r *Repo) RemoveFriendRequest(ctx context.Context, senderID, receiver string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": senderID}
+	update := bson.M{"$pull": bson.M{"friend_requests": bson.M{"user_id": receiver}}}
+	return r.userColl().UpdateOne(ctx, filter, update)
 }
 
-func (r *Repo) CheckPhoneNumberExist(ctx context.Context, phoneNumber string) (err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	var d entity.User
-	filter := bson.D{
-		{"phone_number", phoneNumber},
-		{"deleted_at", nil},
-	}
-	if err2 := r.userColl().FindOne(ctx, filter).Decode(&d); err2 != nil {
-		if err2 != mongo.ErrNoDocuments {
-			return err2
-		}
-	}
-	if d.ID != "" {
-		return errors.PhoneNumberExists()
-	}
-	return
+func (r *Repo) UpdateTypeConversation(ctx context.Context, senderID, chatID1, chatID2, convoType string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": senderID, "conversations.chat_id": bson.M{"$in": []string{chatID1, chatID2}}}
+	update := bson.M{"$set": bson.M{"conversations.$.type": convoType}}
+	return r.userColl().UpdateOne(ctx, filter, update)
 }
 
-func (r *Repo) CheckDuplicateUserNameAndEmail(ctx context.Context, user *entity.User, username string, email string) (err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	var d entity.User
-	filter := bson.D{{"$and", []interface{}{
-		bson.D{{"id", bson.M{"$ne": user.ID}}},
-		bson.D{{"username", username}},
-		bson.D{{"deleted_at", nil}},
-	}}}
-	if err2 := r.userColl().FindOne(ctx, filter).Decode(&d); err2 != nil {
-		if err2 != mongo.ErrNoDocuments {
-			return err2
-		}
-	}
-	if d.ID != "" {
-		return errors.UserNameExists()
-	}
-	filter = bson.D{{"$and", []interface{}{
-		bson.D{{"id", bson.M{"$ne": user.ID}}},
-		bson.D{{"email", email}},
-		bson.D{{"deleted_at", nil}},
-	}}}
-	if err2 := r.userColl().FindOne(ctx, filter).Decode(&d); err2 != nil {
-		if err2 != mongo.ErrNoDocuments {
-			return err2
-		}
-	}
-	if d.ID != "" {
-		return errors.UserEmailExists()
-	}
-	return
+func (r *Repo) AppendConversation(ctx context.Context, id string, conversation entity.Conversation) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": id}
+	update := bson.M{"$push": bson.M{"conversations": conversation}}
+	return r.userColl().UpdateOne(ctx, filter, update)
 }
 
-func (r *Repo) GetUserList(ctx context.Context, params *QueryParams) (res []*entity.User, total int64, err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	coll := r.userColl()
-
-	pipeLine := mongo.Pipeline{}
-	if params.Search != "" {
-		pipeLine = append(pipeLine, partialMatchingSearchPipeline([]string{"name", "username", "email"}, params.Search)...)
-	}
-	for k, v := range params.Filter {
-		pipeLine = append(pipeLine, matchFieldPipeline(k, v))
-	}
-	pipeLine = append(pipeLine, matchFieldPipeline("deleted_at", nil))
-	// pipeLine = append(pipeLine, matchFieldPipeline("is_active", true))
-
-	cursor, err := coll.Aggregate(ctx, append(pipeLine, bson.D{{"$count", "total_count"}}))
-	if err != nil {
-		return nil, 0, err
-	}
-	result := bson.M{}
-	if cursor.Next(ctx) {
-		if err := cursor.Decode(&result); err != nil {
-			return nil, 0, err
-		}
-	}
-	totalCount, _ := result["total_count"].(int32)
-	total = int64(totalCount)
-
-	pipeLine = append(pipeLine, params.SkipLimitSortPipeline()...)
-
-	cursor, err = coll.Aggregate(ctx, pipeLine, collationAggregateOption)
-	if err != nil {
-		return res, 0, err
-	}
-	if err = cursor.All(ctx, &res); err != nil {
-		return res, 0, err
-	}
-	return res, total, nil
+func (r *Repo) AppendConversationToMultiple(ctx context.Context, ids []string, conversation entity.Conversation) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": bson.M{"$in": ids}}
+	update := bson.M{"$push": bson.M{"conversations": conversation}}
+	return r.userColl().UpdateMany(ctx, filter, update)
 }
 
-func (r *Repo) GetAllUsers(ctx context.Context) (res []*entity.User, err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	coll := r.userColl()
-
-	pipeLine := mongo.Pipeline{}
-	pipeLine = append(pipeLine, matchFieldPipeline("deleted_at", nil))
-	// pipeLine = append(pipeLine, matchFieldPipeline("is_active", true))
-	pipeLine = append(pipeLine, friendsLookupPipeline)
-
-	cursor, err := coll.Aggregate(ctx, pipeLine, collationAggregateOption)
-	if err != nil {
-		return res, err
-	}
-	if err = cursor.All(ctx, &res); err != nil {
-		return res, err
-	}
-	return res, nil
+func (r *Repo) RemoveConversation(ctx context.Context, id, chatID string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": id}
+	update := bson.M{"$pull": bson.M{"conversations": bson.M{"chatID": chatID}}}
+	return r.userColl().UpdateOne(ctx, filter, update)
 }
 
-func (r *Repo) UpdateUser(ctx context.Context, user *entity.User) (err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	filter := bson.D{{"id", user.ID}}
-	update := bson.M{"$set": user}
-	_, err = r.userColl().UpdateOne(ctx, filter, update)
-	if err != nil {
-		return err
-	}
-	return nil
+func (r *Repo) RemoveConversationFromMultiple(ctx context.Context, ids []string, chatID string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": bson.M{"$in": ids}}
+	update := bson.M{"$pull": bson.M{"conversations": bson.M{"chatID": chatID}}}
+	return r.userColl().UpdateMany(ctx, filter, update)
 }
 
-func (r *Repo) DeleteUser(ctx context.Context, user *entity.User) (err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	filter := bson.D{{"id", user.ID}}
-	update := bson.M{"$set": user}
-	_, err = r.userColl().UpdateOne(ctx, filter, update)
-	if err != nil {
-		return err
-	}
-	return nil
+func (r *Repo) SearchConversation(ctx context.Context, senderID, chatID1, chatID2 string) (*entity.User, error) {
+	filter := bson.M{"id": senderID, "conversations.chatID": bson.M{"$in": []string{chatID1, chatID2}}}
+	var user entity.User
+	err := r.userColl().FindOne(ctx, filter).Decode(&user)
+	return &user, err
 }
 
-func (r *Repo) CountUser(ctx context.Context) (total int64, err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	var filter = filterField("deleted_at", nil)
-	total, err = r.userColl().CountDocuments(ctx, filter)
-	if err != nil {
-		return
-	}
-	return
+func (r *Repo) SearchSingleConversation(ctx context.Context, senderID, chatID string) (*entity.User, error) {
+	filter := bson.M{"id": senderID, "conversations.chatID": chatID}
+	var user entity.User
+	err := r.userColl().FindOne(ctx, filter).Decode(&user)
+	return &user, err
 }
 
-func (r *Repo) AddFriendRequest(ctx context.Context, user *entity.User, friend *entity.User) (err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	filter := bson.D{{"id", user.ID}}
-	update := bson.M{"$addToSet": bson.M{"friend_request_ids": friend.ID}}
-	_, err = r.userColl().UpdateOne(ctx, filter, update)
-	if err != nil {
-		return err
+func (r *Repo) UpdateChatActivity(ctx context.Context, chatID string, lastUpdateAt time.Time, deliveries, reads []entity.Delivery, newTopChatActivity []entity.ChatActivity) (*mongo.UpdateResult, error) {
+	filter := bson.M{"conversations.chatID": chatID}
+	update := bson.M{
+		"$set": bson.M{
+			"conversations.$.updated_at":          lastUpdateAt,
+			"conversations.$.deliveries":          deliveries,
+			"conversations.$.reads":               reads,
+			"conversations.$.top_chat_activities": newTopChatActivity,
+		},
 	}
-	return nil
+	return r.userColl().UpdateOne(ctx, filter, update)
 }
 
-func (r *Repo) RemoveFriendRequest(ctx context.Context, user *entity.User, friend *entity.User) (err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	filter := bson.D{{"id", user.ID}}
-	update := bson.M{"$pull": bson.M{"friend_request_ids": friend.ID}}
-	_, err = r.userColl().UpdateOne(ctx, filter, update)
-	if err != nil {
-		return err
-	}
-	return nil
+func (r *Repo) UpdateAvatarInConversation(ctx context.Context, oldAvatar, newAvatar string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"conversations.chat_avatar": oldAvatar}
+	update := bson.M{"$set": bson.M{"conversations.$.chat_avatar": newAvatar}}
+	return r.userColl().UpdateOne(ctx, filter, update)
 }
 
-func (r *Repo) AddFriend(ctx context.Context, user *entity.User, friend *entity.User) (err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	filter := bson.D{{"id", user.ID}}
-	update := bson.M{"$addToSet": bson.M{"friend_ids": friend.ID}}
-	_, err = r.userColl().UpdateOne(ctx, filter, update)
-	if err != nil {
-		return err
-	}
-	return nil
+func (r *Repo) UpdateAvatarInFriendRequest(ctx context.Context, oldAvatar, newAvatar string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"friendRequests.user_avatar": oldAvatar}
+	update := bson.M{"$set": bson.M{"friendRequests.$.user_avatar": newAvatar}}
+	return r.userColl().UpdateOne(ctx, filter, update)
 }
 
-func (r *Repo) RemoveFriend(ctx context.Context, user *entity.User, friend *entity.User) (err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
+func (r *Repo) UpdateChatNameInConversation(ctx context.Context, ids []string, chatID, chatName string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": bson.M{"$in": ids}, "conversations.chat_id": chatID}
+	update := bson.M{"$set": bson.M{"conversations.$.chat_name": chatName}}
+	return r.userColl().UpdateMany(ctx, filter, update)
+}
 
-	filter := bson.D{{"id", user.ID}}
-	update := bson.M{"$pull": bson.M{"friend_ids": friend.ID}}
-	_, err = r.userColl().UpdateOne(ctx, filter, update)
+func (r *Repo) UpdateAvatarInConversationMultiple(ctx context.Context, ids []string, chatID, newAvatar string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": bson.M{"$in": ids}, "conversations.chat_id": chatID}
+	update := bson.M{"$set": bson.M{"conversations.$.chat_avatar": newAvatar}}
+	return r.userColl().UpdateMany(ctx, filter, update)
+}
+
+func (r *Repo) DeleteUserByID(ctx context.Context, id string) error {
+	filter := bson.D{{"id", id}}
+	_, err := r.userColl().DeleteOne(ctx, filter)
 	if err != nil {
 		return err
 	}

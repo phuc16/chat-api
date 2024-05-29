@@ -15,7 +15,295 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/auth/login": {
+        "/api/v1/account/change-avatar": {
+            "put": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "ChangeAvatar",
+                "parameters": [
+                    {
+                        "description": "request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AccountChangeAvatarReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/account/change-password": {
+            "put": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "ChangePassword",
+                "parameters": [
+                    {
+                        "description": "request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AccountChangePasswordReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/account/check-phone": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "CheckPhoneNumber",
+                "parameters": [
+                    {
+                        "description": "request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AccountCheckPhoneNumberReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/account/info": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "GetProfile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.Account"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/account/profile/userID/{userID}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "GetProfileByUserID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.Account"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/account/profile/{phoneNumber}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "GetProfileByPhoneNumber",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.Account"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/account/reset-password": {
+            "put": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "ResetPassword",
+                "parameters": [
+                    {
+                        "description": "request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AccountResetPasswordReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/login": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -34,7 +322,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UserLoginReq"
+                            "$ref": "#/definitions/dto.AccountLoginReq"
                         }
                     }
                 ],
@@ -60,7 +348,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/auth/logout": {
+        "/api/v1/auth/logout": {
             "get": {
                 "produces": [
                     "application/json"
@@ -97,24 +385,29 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/auth/register": {
+        "/api/v1/chat/create": {
             "post": {
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "authentications"
+                    "chat"
                 ],
-                "summary": "CreateUser",
+                "summary": "CreateChat",
                 "parameters": [
                     {
-                        "description": "request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UserCreateReq"
-                        }
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -139,97 +432,15 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/otps/request": {
-            "post": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "otps"
-                ],
-                "summary": "RequestOtp",
-                "parameters": [
-                    {
-                        "description": "request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.OtpReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/user/profile": {
+        "/api/v1/chat/get-search": {
             "get": {
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "chat"
                 ],
-                "summary": "GetProfile",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.UserResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/users": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "GetUserList",
+                "summary": "GetSearch",
                 "parameters": [
                     {
                         "type": "string",
@@ -239,167 +450,17 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "integer",
-                        "description": "page of paging",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "size of page of paging",
-                        "name": "page_size",
-                        "in": "query"
-                    },
-                    {
                         "type": "string",
-                        "description": "name of field need to sort",
-                        "name": "sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "sort desc or asc",
-                        "name": "sort_type",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "keyword to search in model",
-                        "name": "search",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.UserListResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "UpdateUser",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
+                        "description": "chatID",
+                        "name": "chatID",
+                        "in": "query",
                         "required": true
                     },
                     {
-                        "description": "request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UserUpdateReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "DeleteUser",
-                "parameters": [
-                    {
                         "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UserDeleteReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/users/friends/suggest": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "SuggestFriend",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
+                        "description": "messageID",
+                        "name": "messageID",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -409,7 +470,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.UserResp"
+                                "$ref": "#/definitions/entity.ChatActivity"
                             }
                         }
                     },
@@ -428,23 +489,141 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users/reset-password": {
-            "put": {
+        "/api/v1/chat/search-bkw": {
+            "get": {
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "chat"
                 ],
-                "summary": "ResetPassword",
+                "summary": "SearchByKeyWord",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "chatID",
+                        "name": "chatID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "key",
+                        "name": "key",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.ChatActivity"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/chat/x-to-y": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "UpdateAvatarAsync",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "oldAvatar",
+                        "name": "oldAvatar",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "newAvatar",
+                        "name": "newAvatar",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/group/create": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "group"
+                ],
+                "summary": "CreateGroup",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UserResetPasswordReq"
+                            "$ref": "#/definitions/dto.CreateGroupReq"
                         }
                     }
                 ],
@@ -470,13 +649,100 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users/{id}": {
+        "/api/v1/group/info": {
             "get": {
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "group"
+                ],
+                "summary": "GetGroupInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "groupID",
+                        "name": "groupID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.Group"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user/create": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentications"
+                ],
+                "summary": "CreateUser",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user/info/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
                 ],
                 "summary": "GetUser",
                 "parameters": [
@@ -492,167 +758,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.UserResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/users/{id}/friends/accept": {
-            "post": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "AcceptFriendRequest",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/users/{id}/friends/reject": {
-            "delete": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "RejectFriendRequest",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/users/{id}/friends/remove": {
-            "delete": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "RemoveFriend",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/users/{id}/friends/request": {
-            "post": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "SendFriendRequest",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
+                            "$ref": "#/definitions/entity.User"
                         }
                     },
                     "400": {
@@ -680,6 +786,93 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.AccountChangeAvatarReq": {
+            "type": "object",
+            "properties": {
+                "newAvatar": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AccountChangePasswordReq": {
+            "type": "object",
+            "properties": {
+                "curPassword": {
+                    "type": "string"
+                },
+                "newPassword": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AccountCheckPhoneNumberReq": {
+            "type": "object",
+            "properties": {
+                "phoneNumber": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AccountLoginReq": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AccountResetPasswordReq": {
+            "type": "object",
+            "properties": {
+                "newPassword": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateGroupReq": {
+            "type": "object",
+            "properties": {
+                "admins": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.PersonInfo"
+                    }
+                },
+                "chatAvatar": {
+                    "type": "string"
+                },
+                "chatName": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "members": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.PersonInfo"
+                    }
+                },
+                "owner": {
+                    "$ref": "#/definitions/entity.PersonInfo"
+                },
+                "setting": {
+                    "$ref": "#/definitions/entity.GroupSetting"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.HTTPResp": {
             "type": "object",
             "properties": {
@@ -691,184 +884,338 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.OtpReq": {
-            "type": "object",
-            "required": [
-                "email"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UserCheckPhoneNumberReq": {
+        "entity.Account": {
             "type": "object",
             "properties": {
-                "phoneNumber": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UserCreateReq": {
-            "type": "object",
-            "properties": {
-                "avatarUrl": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "phoneNumber": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UserDeleteReq": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UserInfoResp": {
-            "type": "object",
-            "properties": {
-                "avatar_url": {
-                    "type": "string"
-                },
-                "email": {
+                "createdAt": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "last_logged_in": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
                 "phoneNumber": {
                     "type": "string"
                 },
-                "status": {
+                "profile": {
+                    "$ref": "#/definitions/entity.Profile"
+                },
+                "pw": {
                     "type": "string"
                 },
-                "username": {
+                "role": {
+                    "type": "string"
+                },
+                "setting": {
+                    "$ref": "#/definitions/entity.Setting"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updatedAt": {
                     "type": "string"
                 }
             }
         },
-        "dto.UserListResp": {
+        "entity.ChatActivity": {
             "type": "object",
             "properties": {
-                "list": {
+                "contents": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.UserResp"
+                        "$ref": "#/definitions/entity.Content"
                     }
                 },
-                "page": {
-                    "type": "integer"
-                },
-                "page_size": {
-                    "type": "integer"
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.UserLoginReq": {
-            "type": "object",
-            "properties": {
-                "password": {
+                "createdAt": {
                     "type": "string"
                 },
-                "phoneNumber": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UserResetPasswordReq": {
-            "type": "object",
-            "properties": {
-                "newPassword": {
-                    "type": "string"
-                },
-                "phoneNumber": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UserResp": {
-            "type": "object",
-            "properties": {
-                "avatar_url": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "friend_requests": {
+                "hidden": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.UserInfoResp"
-                    }
-                },
-                "friends": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.UserInfoResp"
+                        "type": "string"
                     }
                 },
                 "id": {
                     "type": "string"
                 },
-                "last_logged_in": {
+                "messageID": {
                     "type": "string"
                 },
-                "name": {
+                "parentID": {
                     "type": "string"
                 },
-                "phoneNumber": {
+                "recall": {
+                    "type": "boolean"
+                },
+                "timestamp": {
                     "type": "string"
                 },
-                "status": {
+                "updatedAt": {
                     "type": "string"
                 },
-                "updated_at": {
+                "userAvatar": {
                     "type": "string"
                 },
-                "username": {
+                "userID": {
                     "type": "string"
                 }
             }
         },
-        "dto.UserUpdateReq": {
+        "entity.Content": {
             "type": "object",
             "properties": {
-                "avatar_url": {
+                "createdAt": {
                     "type": "string"
                 },
-                "name": {
+                "key": {
                     "type": "string"
                 },
-                "phoneNumber": {
+                "updatedAt": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.Conversation": {
+            "type": "object",
+            "properties": {
+                "chatAvatar": {
+                    "type": "string"
+                },
+                "chatId": {
+                    "type": "string"
+                },
+                "chatName": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deliveries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Delivery"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "id_UserOrGroup": {
+                    "type": "string"
+                },
+                "reads": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Delivery"
+                    }
+                },
+                "topChatActivities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.ChatActivity"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.Delivery": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "messageID": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userAvatar": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "string"
+                },
+                "userName": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.FriendRequest": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isSender": {
+                    "type": "boolean"
+                },
+                "sendAt": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userAvatar": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "string"
+                },
+                "userName": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.Group": {
+            "type": "object",
+            "properties": {
+                "admins": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.PersonInfo"
+                    }
+                },
+                "chatAvatar": {
+                    "type": "string"
+                },
+                "chatName": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "members": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.PersonInfo"
+                    }
+                },
+                "owner": {
+                    "$ref": "#/definitions/entity.PersonInfo"
+                },
+                "setting": {
+                    "$ref": "#/definitions/entity.GroupSetting"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.GroupSetting": {
+            "type": "object",
+            "properties": {
+                "changeChatNameAndAvatar": {
+                    "type": "boolean"
+                },
+                "createNewPolls": {
+                    "type": "boolean"
+                },
+                "membershipApproval": {
+                    "type": "boolean"
+                },
+                "pinMessages": {
+                    "type": "boolean"
+                },
+                "sendMessages": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "entity.PersonInfo": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userAvatar": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "string"
+                },
+                "userName": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.Profile": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "background": {
+                    "type": "string"
+                },
+                "birthday": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "boolean"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "string"
+                },
+                "userName": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.Setting": {
+            "type": "object",
+            "properties": {
+                "allowMessaging": {
+                    "type": "string"
+                },
+                "showBirthday": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.User": {
+            "type": "object",
+            "properties": {
+                "conversations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Conversation"
+                    }
+                },
+                "friendRequests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.FriendRequest"
+                    }
+                },
+                "id": {
                     "type": "string"
                 }
             }

@@ -18,11 +18,11 @@ func (s *Server) Authenticate(ctx *gin.Context) {
 		abortWithStatusError(ctx, 401, apperror.NewError(errors.CodeTokenError, "empty token"))
 		return
 	}
-	user, err := s.UserSvc.Authenticate(context, bearerToken)
+	account, err := s.AuthSvc.Authenticate(context, bearerToken)
 	if err != nil {
 		abortWithStatusError(ctx, 401, err)
 		return
 	}
-	user.SetToContext(ctx)
+	account.SetToContext(ctx)
 	ctx.Next()
 }

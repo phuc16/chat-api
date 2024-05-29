@@ -8,39 +8,19 @@ import (
 	"app/pkg/utils"
 	"context"
 	"strings"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (r *Repo) chatColl() *mongo.Collection {
-	return r.db.Database(config.Cfg.DB.DBName).Collection("chats")
+type SearchIndexes struct {
+	Index int `json:"index"`
 }
 
-func (r *Repo) CreateChatIndexes(ctx context.Context) ([]string, error) {
-	indexes, err := r.chatColl().Indexes().CreateMany(ctx, []mongo.IndexModel{
-		{Keys: bson.D{
-			{"id", 1},
-		}, Options: options.Index().SetUnique(true)},
-		{Keys: bson.D{
-			{"chat_name", 1},
-		}, Options: options.Index().SetUnique(true)},
-		{Keys: bson.D{
-			{"group_admin", 1},
-		}, Options: options.Index().SetUnique(true)},
-		{Keys: bson.D{
-			{"latest_message", 1},
-		}, Options: options.Index().SetUnique(true)},
-		{Keys: bson.D{
-			{"created_at", 1},
-		}, Options: options.Index().SetUnique(true)},
-	})
-	if err != nil {
-		return nil, err
-	}
-	return indexes, nil
+func (r *Repo) chatColl() *mongo.Collection {
+	return r.db.Database(config.Cfg.DB.DBName).Collection("chats")
 }
 
 func (r *Repo) SaveChat(ctx context.Context, chat *entity.Chat) (err error) {
@@ -62,116 +42,178 @@ func (r *Repo) SaveChat(ctx context.Context, chat *entity.Chat) (err error) {
 	return nil
 }
 
-func (r *Repo) GetChatById(ctx context.Context, id string) (res *entity.Chat, err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	var d []*entity.Chat
-
-	pipeLine := mongo.Pipeline{}
-	pipeLine = append(pipeLine, matchFieldPipeline("id", id))
-	pipeLine = append(pipeLine, limitPipeline(1))
-
-	cursor, err := r.chatColl().Aggregate(ctx, pipeLine, collationAggregateOption)
-	if err != nil {
-		return nil, err
+func (r *Repo) FindChatByID(ctx context.Context, id string) (*entity.Chat, error) {
+	var d entity.Chat
+	filter := bson.D{
+		{"id", id},
 	}
-	if err = cursor.All(ctx, &d); err != nil {
-		return nil, err
-	}
-	if len(d) <= 0 {
-		return nil, errors.ChatNotFound()
-	}
-	return d[0], nil
-}
-
-func (r *Repo) GetChatList(ctx context.Context, params *QueryParams) (res []*entity.Chat, total int64, err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	coll := r.chatColl()
-
-	pipeLine := mongo.Pipeline{}
-	if params.Search != "" {
-		pipeLine = append(pipeLine, partialMatchingSearchPipeline([]string{"name", "chat_name", "email"}, params.Search)...)
-	}
-	for k, v := range params.Filter {
-		pipeLine = append(pipeLine, matchFieldPipeline(k, v))
-	}
-
-	cursor, err := coll.Aggregate(ctx, append(pipeLine, bson.D{{"$count", "total_count"}}))
-	if err != nil {
-		return nil, 0, err
-	}
-	result := bson.M{}
-	if cursor.Next(ctx) {
-		if err := cursor.Decode(&result); err != nil {
-			return nil, 0, err
+	if err := r.chatColl().FindOne(ctx, filter).Decode(&d); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, errors.ChatNotFound()
 		}
+		return nil, err
 	}
-	totalCount, _ := result["total_count"].(int32)
-	total = int64(totalCount)
-
-	pipeLine = append(pipeLine, params.SkipLimitSortPipeline()...)
-
-	cursor, err = coll.Aggregate(ctx, pipeLine, collationAggregateOption)
-	if err != nil {
-		return res, 0, err
-	}
-	if err = cursor.All(ctx, &res); err != nil {
-		return res, 0, err
-	}
-	return res, total, nil
+	return &d, nil
 }
 
-func (r *Repo) UpdateChat(ctx context.Context, chat *entity.Chat) (err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	filter := bson.D{{"id", chat.ID}}
-	update := bson.M{"$set": chat}
-	_, err = r.chatColl().UpdateOne(ctx, filter, update)
+func (r *Repo) DeleteChatByID(ctx context.Context, chatID string) error {
+	filter := bson.D{{"id", chatID}}
+	_, err := r.chatColl().DeleteOne(ctx, filter)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *Repo) AddToGroup(ctx context.Context, chat *entity.Chat) (err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
-
-	filter := bson.M{"_id": chat.ID}
-	update := bson.M{
-		"$addToSet": bson.M{"users": chat.Users[0]},
-		"$set":      bson.M{"updated_at": time.Now()},
-	}
-	_, err = r.chatColl().UpdateOne(ctx, filter, update)
-	if err != nil {
-		return err
-	}
-	return nil
-
+func (r *Repo) AppendChatActivityByIDChat(ctx context.Context, chatID string, chatActivity entity.ChatActivity) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": chatID}
+	update := bson.M{"$push": bson.M{"chat_activities": chatActivity}}
+	return r.chatColl().UpdateOne(ctx, filter, update)
 }
 
-func (r *Repo) RemoveFromGroup(ctx context.Context, chat *entity.Chat) (err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-	defer errors.WrapDatabaseError(&err)
+func (r *Repo) AppendDelivery(ctx context.Context, chatID string, delivery entity.Delivery) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": chatID}
+	update := bson.M{"$push": bson.M{"deliveries": delivery}}
+	return r.chatColl().UpdateOne(ctx, filter, update)
+}
 
-	filter := bson.M{"_id": chat.ID}
-	update := bson.M{
-		"$pull": bson.M{"users": chat.Users[0]},
-		"$set":  bson.M{"updated_at": time.Now()},
+func (r *Repo) AppendRead(ctx context.Context, chatID string, delivery entity.Delivery) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": chatID}
+	update := bson.M{"$push": bson.M{"reads": delivery}}
+	return r.chatColl().UpdateOne(ctx, filter, update)
+}
+
+func (r *Repo) SearchDeliveryByUserID(ctx context.Context, chatID string, userID string) (*entity.Chat, error) {
+	filter := bson.M{"id": chatID, "deliveries.user_id": userID}
+	var chat entity.Chat
+	err := r.chatColl().FindOne(ctx, filter).Decode(&chat)
+	return &chat, err
+}
+
+func (r *Repo) SearchReadByUserID(ctx context.Context, chatID string, userID string) (*entity.Chat, error) {
+	filter := bson.M{"id": chatID, "reads.user_id": userID}
+	var chat entity.Chat
+	err := r.chatColl().FindOne(ctx, filter).Decode(&chat)
+	return &chat, err
+}
+
+func (r *Repo) ChangeDelivery(ctx context.Context, chatID string, userID string, messageID string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": chatID, "deliveries.user_id": userID}
+	update := bson.M{"$set": bson.M{"deliveries.$.message_id": messageID}}
+	return r.chatColl().UpdateOne(ctx, filter, update)
+}
+
+func (r *Repo) ChangeRead(ctx context.Context, chatID string, userID string, messageID string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": chatID, "reads.user_id": userID}
+	update := bson.M{"$set": bson.M{"reads.$.message_id": messageID}}
+	return r.chatColl().UpdateOne(ctx, filter, update)
+}
+
+func (r *Repo) RemoveDelivery(ctx context.Context, chatID string, messageID string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": chatID}
+	update := bson.M{"$pull": bson.M{"deliveries": bson.M{"message_id": messageID}}}
+	return r.chatColl().UpdateOne(ctx, filter, update)
+}
+
+func (r *Repo) RemoveRead(ctx context.Context, chatID string, messageID string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": chatID}
+	update := bson.M{"$pull": bson.M{"reads": bson.M{"message_id": messageID}}}
+	return r.chatColl().UpdateOne(ctx, filter, update)
+}
+
+func (r *Repo) AppendHiddenMessage(ctx context.Context, chatID string, userID string, messageID string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": chatID, "chat_activities.message_id": messageID}
+	update := bson.M{"$push": bson.M{"chat_activities.$.hidden": userID}}
+	return r.chatColl().UpdateOne(ctx, filter, update)
+}
+
+func (r *Repo) RecallMessage(ctx context.Context, chatID string, messageID string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"id": chatID, "chat_activities.message_id": messageID}
+	update := bson.M{"$set": bson.M{"chat_activities.$.recall": true}}
+	return r.chatColl().UpdateOne(ctx, filter, update)
+}
+
+func (r *Repo) GetChatTop10(ctx context.Context, chatID string) (*entity.Chat, error) {
+	filter := bson.M{"id": chatID}
+	options := options.FindOne().SetProjection(bson.M{"chat_activities": bson.M{"$slice": -10}})
+	var chat entity.Chat
+	err := r.chatColl().FindOne(ctx, filter, options).Decode(&chat)
+	return &chat, err
+}
+
+func (r *Repo) GetChatActivityFromNToM(ctx context.Context, chatID string, x int, y int) ([]entity.ChatActivity, error) {
+	pipeline := mongo.Pipeline{
+		{{"$match", bson.M{"id": chatID}}},
+		{{"$project", bson.M{"id": 0, "chat_activities": 1}}},
+		{{"$unwind", "$chat_activities"}},
+		{{"$replaceRoot", bson.M{"newRoot": "$chat_activities"}}},
+		{{"$sort", bson.M{"timestamp": -1}}},
+		{{"$skip", x}},
+		{{"$limit", y}},
+		{{"$sort", bson.M{"timestamp": 1}}},
 	}
-	_, err = r.chatColl().UpdateOne(ctx, filter, update)
+	cursor, err := r.chatColl().Aggregate(ctx, pipeline)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	var activities []entity.ChatActivity
+	if err = cursor.All(ctx, &activities); err != nil {
+		return nil, err
+	}
+	return activities, nil
+}
 
+func (r *Repo) UpdateAvatarInRead(ctx context.Context, oldAvatar string, newAvatar string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"reads.user_avatar": oldAvatar}
+	update := bson.M{"$set": bson.M{"reads.$.user_avatar": newAvatar}}
+	return r.chatColl().UpdateOne(ctx, filter, update)
+}
+
+func (r *Repo) UpdateAvatarInDelivery(ctx context.Context, oldAvatar string, newAvatar string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"deliveries.user_avatar": oldAvatar}
+	update := bson.M{"$set": bson.M{"deliveries.$.user_avatar": newAvatar}}
+	return r.chatColl().UpdateOne(ctx, filter, update)
+}
+
+func (r *Repo) SearchByKeyWord(ctx context.Context, chatID string, key string) ([]entity.ChatActivity, error) {
+	pipeline := mongo.Pipeline{
+		{{"$match", bson.M{"id": chatID}}},
+		{{"$unwind", "$chat_activities"}},
+		{{"$replaceRoot", bson.M{"newRoot": "$chat_activities"}}},
+		{{"$match", bson.M{"contents.value": primitive.Regex{Pattern: key, Options: "i"}}}},
+		{{"$sort", bson.M{"timestamp": -1}}},
+	}
+	cursor, err := r.chatColl().Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err
+	}
+	var activities []entity.ChatActivity
+	if err = cursor.All(ctx, &activities); err != nil {
+		return nil, err
+	}
+	return activities, nil
+}
+
+func (r *Repo) GetIndexOfMessageID(ctx context.Context, chatID string, messageID string) ([]SearchIndexes, error) {
+	pipeline := mongo.Pipeline{
+		{{"$match", bson.M{"id": chatID}}},
+		{{"$unwind", "$chat_activities"}},
+		{{"$replaceRoot", bson.M{"newRoot": "$chat_activities"}}},
+		{{"$sort", bson.M{"timestamp": -1}}},
+		{{"$group", bson.M{"id": nil, "chat_activities": bson.M{"$push": "$$ROOT"}}}},
+		{{"$project", bson.M{"chat_activities": bson.M{"$map": bson.M{"input": "$chat_activities", "as": "activity", "in": bson.M{"$mergeObjects": bson.A{"$$activity", bson.M{"index": bson.M{"$indexOfArray": bson.A{"$chat_activities.message_id", "$$activity.message_id"}}}}}}}}}},
+		{{"$unwind", "$chat_activities"}},
+		{{"$replaceRoot", bson.M{"newRoot": "$chat_activities"}}},
+		{{"$match", bson.M{"messageID": messageID}}},
+		{{"$project", bson.M{"index": 1}}},
+	}
+	cursor, err := r.chatColl().Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err
+	}
+	var result []SearchIndexes
+	if err = cursor.All(ctx, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
 }

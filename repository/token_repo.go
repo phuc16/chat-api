@@ -43,7 +43,7 @@ func (r *Repo) CreateToken(ctx context.Context, token *entity.Token) error {
 	return nil
 }
 
-func (r *Repo) GetTokenById(ctx context.Context, id string) (*entity.Token, error) {
+func (r *Repo) GetTokenByID(ctx context.Context, id string) (*entity.Token, error) {
 	var d entity.Token
 	filter := bson.D{
 		{"id", id},
@@ -55,16 +55,6 @@ func (r *Repo) GetTokenById(ctx context.Context, id string) (*entity.Token, erro
 		return nil, err
 	}
 	return &d, nil
-}
-
-func (r *Repo) GetTokenList(ctx context.Context, params QueryParams) ([]*entity.Token, int64, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (r *Repo) UpdateToken(ctx context.Context, token *entity.Token) error {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (r *Repo) DeleteToken(ctx context.Context, token *entity.Token) error {

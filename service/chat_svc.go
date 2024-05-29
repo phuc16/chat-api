@@ -1,97 +1,64 @@
 package service
 
 import (
+	"app/dto"
 	"app/entity"
 	"app/errors"
 	"app/pkg/trace"
 	"app/pkg/utils"
-	"app/repository"
 	"context"
-	"time"
 )
 
 type ChatService struct {
+	UserRepo IUserRepo
 	ChatRepo IChatRepo
 }
 
-func NewChatService(chatRepo IChatRepo) *ChatService {
-	return &ChatService{ChatRepo: chatRepo}
+func NewChatService(userRepo IUserRepo, chatRepo IChatRepo) *ChatService {
+	return &ChatService{UserRepo: userRepo, ChatRepo: chatRepo}
 }
 
-func (s *ChatService) CreateChat(ctx context.Context, e *entity.Chat) (res any, err error) {
+func (s *ChatService) CreateChat(ctx context.Context, req *dto.CreateChatReq) (res any, err error) {
 	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
 	defer span.End()
 
-	chat := &entity.Chat{
-		ID:        utils.NewID(),
-		ChatName:  "sender",
-		IsGroup:   e.IsGroup,
-		Users:     e.Users,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+	chat := entity.Chat{
+		ID: req.ID,
 	}
-	err = s.ChatRepo.SaveChat(ctx, chat)
+	err = s.ChatRepo.SaveChat(ctx, &chat)
 	return
 }
 
-func (s *ChatService) CreateGroup(ctx context.Context, e *entity.Chat) (res any, err error) {
+func (s *ChatService) GetChatActivityFromNToM(ctx context.Context, req *dto.GetChatActivityFromNToMReq) (res []entity.ChatActivity, err error) {
 	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
 	defer span.End()
 
-	if len(e.Users) < 2 {
-		return nil, errors.ChatGroupNotEnoughUser()
-	}
-	chat := &entity.Chat{
-		ID:        utils.NewID(),
-		ChatName:  "sender",
-		IsGroup:   e.IsGroup,
-		Users:     e.Users,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-	err = s.ChatRepo.SaveChat(ctx, chat)
-	return
+	return s.ChatRepo.GetChatActivityFromNToM(ctx, req.ID, req.X, req.Y)
 }
 
-func (s *ChatService) GetChatList(ctx context.Context, query *repository.QueryParams) (res []*entity.Chat, total int64, err error) {
+func (s *ChatService) SearchByKeyWord(ctx context.Context, req *dto.SearchByKeyWordReq) (res []entity.ChatActivity, err error) {
 	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
 	defer span.End()
 
-	return s.ChatRepo.GetChatList(ctx, query)
+	return s.ChatRepo.SearchByKeyWord(ctx, req.ChatID, req.Key)
 }
 
-func (s *ChatService) RenameGroup(ctx context.Context, e *entity.Chat) (res any, err error) {
+func (s *ChatService) GetSearch(ctx context.Context, req *dto.GetSearchReq) (res []entity.ChatActivity, err error) {
 	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
 	defer span.End()
 
-	dbChat, err := s.ChatRepo.GetChatById(ctx, e.ID)
+	chatIndexes, err := s.ChatRepo.GetIndexOfMessageID(ctx, req.ChatID, req.MessageID)
 	if err != nil {
 		return
 	}
-	dbChat.ChatName = e.ChatName
-	dbChat.UpdatedAt = time.Now()
-	err = s.ChatRepo.UpdateChat(ctx, dbChat)
-	return
-}
-
-func (s *ChatService) AddToGroup(ctx context.Context, chat *entity.Chat) (res any, err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-
-	err = s.ChatRepo.AddToGroup(ctx, chat)
-	if err != nil {
-		return
+	if len(chatIndexes) == 0 {
+		return nil, errors.ChatNotFound()
 	}
-	return
-}
 
-func (s *ChatService) RemoveFromGroup(ctx context.Context, chat *entity.Chat) (res any, err error) {
-	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
-	defer span.End()
-
-	err = s.ChatRepo.RemoveFromGroup(ctx, chat)
-	if err != nil {
-		return
+	getChatActivityFromNToMReq := &dto.GetChatActivityFromNToMReq{
+		ID: req.ChatID,
+		X:  0,
+		Y:  chatIndexes[0].Index + 11,
 	}
-	return
+	return s.GetChatActivityFromNToM(ctx, getChatActivityFromNToMReq)
 }

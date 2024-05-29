@@ -10,163 +10,105 @@ import (
 //
 //	@Summary	CreateChat
 //	@Description
-//	@Tags		chats
-//	@Produce	json
-//	@Param		request	body		dto.AccessChatReq	true	"request"
-//	@Success	200		{object}	dto.HTTPResp
-//	@Failure	400		{object}	dto.HTTPResp
-//	@Failure	500		{object}	dto.HTTPResp
-//	@Router		/api/chats [post]
-func (s *Server) CreateChat(ctx *gin.Context) {
-	req, err := dto.AccessChatReq{}.Bind(ctx)
-	if err != nil {
-		abortWithStatusError(ctx, 400, err)
-		return
-	}
-	_, err = s.ChatSvc.CreateChat(ctxFromGin(ctx), req.ToChat(ctxFromGin(ctx)))
-	if err != nil {
-		abortWithStatusError(ctx, 400, err)
-		return
-	}
-}
-
-// CreateGroup godoc
-//
-//	@Summary	CreateGroup
-//	@Description
-//	@Tags		chats
-//	@Produce	json
-//	@Param		request	body		dto.CreateGroupReq	true	"request"
-//	@Success	200		{object}	dto.HTTPResp
-//	@Failure	400		{object}	dto.HTTPResp
-//	@Failure	500		{object}	dto.HTTPResp
-//	@Router		/api/chats/group [post]
-func (s *Server) CreateGroup(ctx *gin.Context) {
-	req, err := dto.CreateGroupReq{}.Bind(ctx)
-	if err != nil {
-		abortWithStatusError(ctx, 400, err)
-		return
-	}
-	_, err = s.ChatSvc.CreateGroup(ctxFromGin(ctx), req.ToChat(ctxFromGin(ctx)))
-	if err != nil {
-		abortWithStatusError(ctx, 400, err)
-		return
-	}
-}
-
-// GetChatList godoc
-//
-//	@Summary	GetChatList
-//	@Description
-//	@Tags		chats
+//	@Tags		chat
 //	@Produce	json
 //	@Param		Authorization	header		string	true	"Bearer token"
-//	@Param		page			query		int		false	"page of paging"
-//	@Param		page_size		query		int		false	"size of page of paging"
-//	@Param		sort			query		string	false	"name of field need to sort"
-//	@Param		sort_type		query		string	false	"sort desc or asc"
-//	@Param		search			query		string	false	"keyword to search in model"
-//	@Success	200				{object}	dto.ChatListResp
+//	@Param		id				query		string	true	"id"
+//	@Success	200				{object}	dto.HTTPResp
 //	@Failure	400				{object}	dto.HTTPResp
 //	@Failure	500				{object}	dto.HTTPResp
-//	@Router		/api/chats [get]
-func (s *Server) GetChatList(ctx *gin.Context) {
-	params, err := dto.QueryParams{}.Bind(ctx)
+//	@Router		/api/v1/chat/create [post]
+func (s *Server) CreateChat(ctx *gin.Context) {
+	req, err := dto.CreateChatReq{}.Bind(ctx)
 	if err != nil {
 		abortWithStatusError(ctx, 400, err)
 		return
 	}
-	err = params.Validate(dto.ChatResp{})
-	if err != nil {
-		abortWithStatusError(ctx, 400, err)
-		return
-	}
-	chats, total, err := s.ChatSvc.GetChatList(ctxFromGin(ctx), params.ToRepoQueryParams())
-	if err != nil {
-		abortWithStatusError(ctx, 400, err)
-		return
-	}
-	var list = []*dto.ChatResp{}
-	for _, u := range chats {
-		list = append(list, dto.ChatResp{}.FromChat(u))
-	}
-	res := dto.ChatListResp{
-		Total:    total,
-		Page:     params.Page,
-		PageSize: params.PageSize,
-		List:     list,
-	}
-	ctx.AbortWithStatusJSON(200, res)
-}
-
-// RenameGroup godoc
-//
-//	@Summary	RenameGroup
-//	@Description
-//	@Tags		chats
-//	@Produce	json
-//	@Param		request	body		dto.RenameGroupReq	true	"request"
-//	@Success	200		{object}	dto.HTTPResp
-//	@Failure	400		{object}	dto.HTTPResp
-//	@Failure	500		{object}	dto.HTTPResp
-//	@Router		/api/chats/group/rename [put]
-func (s *Server) RenameGroup(ctx *gin.Context) {
-	req, err := dto.RenameGroupReq{}.Bind(ctx)
-	if err != nil {
-		abortWithStatusError(ctx, 400, err)
-		return
-	}
-	_, err = s.ChatSvc.RenameGroup(ctxFromGin(ctx), req.ToChat(ctxFromGin(ctx)))
+	_, err = s.ChatSvc.CreateChat(ctxFromGin(ctx), req)
 	if err != nil {
 		abortWithStatusError(ctx, 400, err)
 		return
 	}
 }
 
-// AddToGroup godoc
+// GetChatActivityFromNToM godoc
 //
-//	@Summary	RenameChat
+//	@Summary	GetChatActivityFromNToM
 //	@Description
-//	@Tags		chats
+//	@Tags		chat
 //	@Produce	json
-//	@Param		request	body		dto.AddToGroupReq	true	"request"
-//	@Success	200		{object}	dto.HTTPResp
-//	@Failure	400		{object}	dto.HTTPResp
-//	@Failure	500		{object}	dto.HTTPResp
-//	@Router		/api/chats/groupAdd [put]
-func (s *Server) AddToGroup(ctx *gin.Context) {
-	req, err := dto.AddToGroupReq{}.Bind(ctx)
+//	@Param		Authorization	header		string	true	"Bearer token"
+//	@Param		id				query		string	true	"id"
+//	@Param		x				query		int		true	"x"
+//	@Param		y				query		int		true	"y"
+//	@Success	200				{object}	[]entity.ChatActivity
+//	@Failure	400				{object}	dto.HTTPResp
+//	@Failure	500				{object}	dto.HTTPResp
+//	@Router		/api/v1/chat/x-to-y [get]
+func (s *Server) GetChatActivityFromNToM(ctx *gin.Context) {
+	req, err := dto.GetChatActivityFromNToMReq{}.Bind(ctx)
 	if err != nil {
 		abortWithStatusError(ctx, 400, err)
 		return
 	}
-	_, err = s.ChatSvc.AddToGroup(ctxFromGin(ctx), req.ToChat(ctxFromGin(ctx)))
+	chatActivities, err := s.ChatSvc.GetChatActivityFromNToM(ctxFromGin(ctx), req)
 	if err != nil {
 		abortWithStatusError(ctx, 400, err)
 		return
 	}
+	ctx.AbortWithStatusJSON(200, chatActivities)
 }
 
-// RemoveFromGroup godoc
+// SearchByKeyWord godoc
 //
-//	@Summary	RemoveFromGroup
+//	@Summary	SearchByKeyWord
 //	@Description
-//	@Tags		chats
+//	@Tags		chat
 //	@Produce	json
-//	@Param		request	body		dto.RemoveFromGroupReq	true	"request"
-//	@Success	200		{object}	dto.HTTPResp
-//	@Failure	400		{object}	dto.HTTPResp
-//	@Failure	500		{object}	dto.HTTPResp
-//	@Router		/api/chats/groupRemove [put]
-func (s *Server) RemoveFromGroup(ctx *gin.Context) {
-	req, err := dto.RemoveFromGroupReq{}.Bind(ctx)
+//	@Param		Authorization	header		string	true	"Bearer token"
+//	@Param		chatID			query		string	true	"chatID"
+//	@Param		key				query		string	true	"key"
+//	@Success	200				{object}	[]entity.ChatActivity
+//	@Failure	400				{object}	dto.HTTPResp
+//	@Failure	500				{object}	dto.HTTPResp
+//	@Router		/api/v1/chat/search-bkw [get]
+func (s *Server) SearchByKeyWord(ctx *gin.Context) {
+	req, err := dto.SearchByKeyWordReq{}.Bind(ctx)
 	if err != nil {
 		abortWithStatusError(ctx, 400, err)
 		return
 	}
-	_, err = s.ChatSvc.RemoveFromGroup(ctxFromGin(ctx), req.ToChat(ctxFromGin(ctx)))
+	chatActivities, err := s.ChatSvc.SearchByKeyWord(ctxFromGin(ctx), req)
 	if err != nil {
 		abortWithStatusError(ctx, 400, err)
 		return
 	}
+	ctx.AbortWithStatusJSON(200, chatActivities)
+}
+
+// GetSearch godoc
+//
+//	@Summary	GetSearch
+//	@Description
+//	@Tags		chat
+//	@Produce	json
+//	@Param		Authorization	header		string	true	"Bearer token"
+//	@Param		chatID			query		string	true	"chatID"
+//	@Param		messageID		query		string	true	"messageID"
+//	@Success	200				{object}	[]entity.ChatActivity
+//	@Failure	400				{object}	dto.HTTPResp
+//	@Failure	500				{object}	dto.HTTPResp
+//	@Router		/api/v1/chat/get-search [get]
+func (s *Server) GetSearch(ctx *gin.Context) {
+	req, err := dto.GetSearchReq{}.Bind(ctx)
+	if err != nil {
+		abortWithStatusError(ctx, 400, err)
+		return
+	}
+	chatActivities, err := s.ChatSvc.GetSearch(ctxFromGin(ctx), req)
+	if err != nil {
+		abortWithStatusError(ctx, 400, err)
+		return
+	}
+	ctx.AbortWithStatusJSON(200, chatActivities)
 }

@@ -55,12 +55,14 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
-		otpSvc := service.NewOtpService(repo, repo)
-		userSvc := service.NewUserService(otpSvc, repo, repo)
-		chatSvc := service.NewChatService(repo)
-		messageSvc := service.NewMessageService(repo, repo)
+		updateAsyncSvc := service.NewUpdateAsyncService(repo, repo, repo)
+		accountSvc := service.NewAccountService(repo, repo, updateAsyncSvc)
+		authSvc := service.NewAuthService(repo, repo, repo)
+		userSvc := service.NewUserService(repo, repo, updateAsyncSvc)
+		chatSvc := service.NewChatService(repo, repo)
+		groupSvc := service.NewGroupService(repo)
 
-		httpSrv := http.NewServer(userSvc, otpSvc, chatSvc, messageSvc)
+		httpSrv := http.NewServer(accountSvc, authSvc, userSvc, chatSvc, groupSvc)
 		quit := make(chan error)
 		go func() {
 			err := httpSrv.Start()

@@ -26,14 +26,15 @@ import (
 )
 
 type Server struct {
+	AccountSvc *service.AccountService
+	AuthSvc    *service.AuthService
 	UserSvc    *service.UserService
-	OtpSvc     *service.OtpService
 	ChatSvc    *service.ChatService
-	MessageSvc *service.MessageService
+	GroupSvc   *service.GroupService
 }
 
-func NewServer(userSvc *service.UserService, otpSvc *service.OtpService, chatSvc *service.ChatService, messageSvc *service.MessageService) *Server {
-	return &Server{UserSvc: userSvc, OtpSvc: otpSvc, ChatSvc: chatSvc, MessageSvc: messageSvc}
+func NewServer(accountSvc *service.AccountService, authSvc *service.AuthService, userSvc *service.UserService, chatSvc *service.ChatService, groupSvc *service.GroupService) *Server {
+	return &Server{AccountSvc: accountSvc, AuthSvc: authSvc, UserSvc: userSvc, ChatSvc: chatSvc, GroupSvc: groupSvc}
 }
 
 func (s *Server) Routes(router *gin.RouterGroup) {
@@ -44,35 +45,26 @@ func (s *Server) Routes(router *gin.RouterGroup) {
 		router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 
-	router.POST("/auth/register", s.CreateUser)
 	router.POST("/auth/login", s.Login)
 	router.GET("/auth/logout", s.Logout)
 
-	router.GET("/user/profile", s.Authenticate, s.GetProfile)
-	router.GET("/users", s.Authenticate, s.GetUserList)
-	router.GET("/users/:id", s.Authenticate, s.GetUser)
-	// router.PUT("/users/active", s.ActiveUser)
-	router.POST("/users/check-phone", s.CheckPhoneNumber)
-	router.PUT("/users/reset-password", s.ResetPassword)
-	router.PUT("/users", s.Authenticate, s.UpdateUser)
-	router.DELETE("/users", s.Authenticate, s.DeleteUser)
-	router.POST("/users/:id/friends/request", s.Authenticate, s.SendFriendRequest)
-	router.DELETE("/users/:id/friends/reject", s.Authenticate, s.RejectFriendRequest)
-	router.POST("/users/:id/friends/accept", s.Authenticate, s.AcceptFriendRequest)
-	router.DELETE("/users/:id/friends/remove", s.Authenticate, s.RemoveFriend)
-	router.GET("/users/friends/suggest", s.Authenticate, s.SuggestFriend)
+	router.GET("/account/profile/:phoneNumber", s.Authenticate, s.GetProfileByPhoneNumber)
+	router.GET("/account/profile/userID/:userID", s.Authenticate, s.GetProfileByUserID)
+	router.GET("/account/info", s.Authenticate, s.GetProfile)
+	router.POST("/account/check-phone", s.CheckPhoneNumber)
+	router.PUT("/account/reset-password", s.ResetPassword)
+	router.PUT("/account/change-password", s.ChangePassword)
+	router.PUT("/account/change-avatar", s.ChangeAvatar)
 
-	router.POST("/chat", s.Authenticate, s.CreateChat)
-	router.GET("/chat", s.Authenticate, s.GetChatList)
-	router.POST("/chat/group", s.Authenticate, s.CreateGroup)
-	router.PUT("/chat/group/rename", s.Authenticate, s.RenameGroup)
-	router.PUT("/chat/groupAdd", s.Authenticate, s.AddToGroup)
-	router.PUT("/chat/groupRemove", s.Authenticate, s.RemoveFromGroup)
+	router.POST("/user/create", s.CreateUser)
+	router.GET("/user/info/:id", s.Authenticate, s.GetUser)
+	router.GET("/user/update-avatar-account", s.Authenticate, s.UpdateAvatarAsync)
 
-	router.POST("/message", s.Authenticate, s.SendMessage)
-	router.GET("/messages/chat_id", s.Authenticate, s.GetMessageListByChatId)
+	router.POST("/chat/create", s.Authenticate, s.CreateChat)
+	router.GET("/chat/x-to-y", s.Authenticate, s.GetChatActivityFromNToM)
+	router.GET("/chat/search-bkw", s.Authenticate, s.SearchByKeyWord)
+	router.GET("/chat/get-search", s.Authenticate, s.SearchByKeyWord)
 
-	router.POST("/otps/request", s.RequestOtp)
 }
 
 func (s *Server) Start() (err error) {
@@ -105,7 +97,7 @@ func (s *Server) Start() (err error) {
 	sessMiddleware := sessions.Sessions("app_session", store)
 	app.Use(sessMiddleware)
 
-	api := app.Group("/api")
+	api := app.Group("/api/v1")
 
 	s.Routes(api)
 

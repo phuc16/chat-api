@@ -17,6 +17,8 @@ services:
       - TRACE_PROVIDER_ENABLE=true
       - TRACE_PROVIDER_OTLP_HTTP_ENDPOINT=app-chat-jaeger:4318
       - WAIT_HOSTS=app-chat-db:27017
+      - DB_URI=mongodb://hcmut:hcmut123456@app-chat-db:27017/app-chat-db?authMechanism=SCRAM-SHA-256
+      - DB_NAME=app-chat-db
 
   app-chat-db:
     container_name: app-chat-db

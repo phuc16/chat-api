@@ -4,6 +4,62 @@ definitions:
       accessToken:
         type: string
     type: object
+  dto.AccountChangeAvatarReq:
+    properties:
+      newAvatar:
+        type: string
+    type: object
+  dto.AccountChangePasswordReq:
+    properties:
+      curPassword:
+        type: string
+      newPassword:
+        type: string
+    type: object
+  dto.AccountCheckPhoneNumberReq:
+    properties:
+      phoneNumber:
+        type: string
+    type: object
+  dto.AccountLoginReq:
+    properties:
+      password:
+        type: string
+      phoneNumber:
+        type: string
+    type: object
+  dto.AccountResetPasswordReq:
+    properties:
+      newPassword:
+        type: string
+      phoneNumber:
+        type: string
+    type: object
+  dto.CreateGroupReq:
+    properties:
+      admins:
+        items:
+          $ref: '#/definitions/entity.PersonInfo'
+        type: array
+      chatAvatar:
+        type: string
+      chatName:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      members:
+        items:
+          $ref: '#/definitions/entity.PersonInfo'
+        type: array
+      owner:
+        $ref: '#/definitions/entity.PersonInfo'
+      setting:
+        $ref: '#/definitions/entity.GroupSetting'
+      updatedAt:
+        type: string
+    type: object
   dto.HTTPResp:
     properties:
       code:
@@ -11,128 +67,416 @@ definitions:
       msg:
         type: string
     type: object
-  dto.OtpReq:
+  entity.Account:
     properties:
-      email:
-        type: string
-    required:
-    - email
-    type: object
-  dto.UserCheckPhoneNumberReq:
-    properties:
-      phoneNumber:
-        type: string
-    type: object
-  dto.UserCreateReq:
-    properties:
-      avatarUrl:
-        type: string
-      email:
-        type: string
-      name:
-        type: string
-      password:
-        type: string
-      phoneNumber:
-        type: string
-      username:
-        type: string
-    type: object
-  dto.UserDeleteReq:
-    properties:
-      id:
-        type: string
-    type: object
-  dto.UserInfoResp:
-    properties:
-      avatar_url:
-        type: string
-      email:
+      createdAt:
         type: string
       id:
         type: string
-      last_logged_in:
-        type: string
-      name:
-        type: string
       phoneNumber:
         type: string
-      status:
+      profile:
+        $ref: '#/definitions/entity.Profile'
+      pw:
         type: string
-      username:
+      role:
+        type: string
+      setting:
+        $ref: '#/definitions/entity.Setting'
+      type:
+        type: string
+      updatedAt:
         type: string
     type: object
-  dto.UserListResp:
+  entity.ChatActivity:
     properties:
-      list:
+      contents:
         items:
-          $ref: '#/definitions/dto.UserResp'
+          $ref: '#/definitions/entity.Content'
         type: array
-      page:
-        type: integer
-      page_size:
-        type: integer
-      total:
-        type: integer
-    type: object
-  dto.UserLoginReq:
-    properties:
-      password:
+      createdAt:
         type: string
-      phoneNumber:
-        type: string
-    type: object
-  dto.UserResetPasswordReq:
-    properties:
-      newPassword:
-        type: string
-      phoneNumber:
-        type: string
-    type: object
-  dto.UserResp:
-    properties:
-      avatar_url:
-        type: string
-      created_at:
-        type: string
-      email:
-        type: string
-      friend_requests:
+      hidden:
         items:
-          $ref: '#/definitions/dto.UserInfoResp'
-        type: array
-      friends:
-        items:
-          $ref: '#/definitions/dto.UserInfoResp'
+          type: string
         type: array
       id:
         type: string
-      last_logged_in:
+      messageID:
         type: string
-      name:
+      parentID:
         type: string
-      phoneNumber:
+      recall:
+        type: boolean
+      timestamp:
         type: string
-      status:
+      updatedAt:
         type: string
-      updated_at:
+      userAvatar:
         type: string
-      username:
+      userID:
         type: string
     type: object
-  dto.UserUpdateReq:
+  entity.Content:
     properties:
-      avatar_url:
+      createdAt:
         type: string
-      name:
+      key:
         type: string
-      phoneNumber:
+      updatedAt:
+        type: string
+      value:
+        type: string
+    type: object
+  entity.Conversation:
+    properties:
+      chatAvatar:
+        type: string
+      chatId:
+        type: string
+      chatName:
+        type: string
+      createdAt:
+        type: string
+      deliveries:
+        items:
+          $ref: '#/definitions/entity.Delivery'
+        type: array
+      id:
+        type: string
+      id_UserOrGroup:
+        type: string
+      reads:
+        items:
+          $ref: '#/definitions/entity.Delivery'
+        type: array
+      topChatActivities:
+        items:
+          $ref: '#/definitions/entity.ChatActivity'
+        type: array
+      type:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  entity.Delivery:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      messageID:
+        type: string
+      updatedAt:
+        type: string
+      userAvatar:
+        type: string
+      userID:
+        type: string
+      userName:
+        type: string
+    type: object
+  entity.FriendRequest:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      isSender:
+        type: boolean
+      sendAt:
+        type: string
+      updatedAt:
+        type: string
+      userAvatar:
+        type: string
+      userID:
+        type: string
+      userName:
+        type: string
+    type: object
+  entity.Group:
+    properties:
+      admins:
+        items:
+          $ref: '#/definitions/entity.PersonInfo'
+        type: array
+      chatAvatar:
+        type: string
+      chatName:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      members:
+        items:
+          $ref: '#/definitions/entity.PersonInfo'
+        type: array
+      owner:
+        $ref: '#/definitions/entity.PersonInfo'
+      setting:
+        $ref: '#/definitions/entity.GroupSetting'
+      updatedAt:
+        type: string
+    type: object
+  entity.GroupSetting:
+    properties:
+      changeChatNameAndAvatar:
+        type: boolean
+      createNewPolls:
+        type: boolean
+      membershipApproval:
+        type: boolean
+      pinMessages:
+        type: boolean
+      sendMessages:
+        type: boolean
+    type: object
+  entity.PersonInfo:
+    properties:
+      createdAt:
+        type: string
+      updatedAt:
+        type: string
+      userAvatar:
+        type: string
+      userID:
+        type: string
+      userName:
+        type: string
+    type: object
+  entity.Profile:
+    properties:
+      avatar:
+        type: string
+      background:
+        type: string
+      birthday:
+        type: string
+      createdAt:
+        type: string
+      gender:
+        type: boolean
+      updatedAt:
+        type: string
+      userID:
+        type: string
+      userName:
+        type: string
+    type: object
+  entity.Setting:
+    properties:
+      allowMessaging:
+        type: string
+      showBirthday:
+        type: string
+    type: object
+  entity.User:
+    properties:
+      conversations:
+        items:
+          $ref: '#/definitions/entity.Conversation'
+        type: array
+      friendRequests:
+        items:
+          $ref: '#/definitions/entity.FriendRequest'
+        type: array
+      id:
         type: string
     type: object
 info:
   contact: {}
 paths:
-  /api/auth/login:
+  /api/v1/account/change-avatar:
+    put:
+      parameters:
+      - description: request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AccountChangeAvatarReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: ChangeAvatar
+      tags:
+      - account
+  /api/v1/account/change-password:
+    put:
+      parameters:
+      - description: request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AccountChangePasswordReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: ChangePassword
+      tags:
+      - account
+  /api/v1/account/check-phone:
+    post:
+      parameters:
+      - description: request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AccountCheckPhoneNumberReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: CheckPhoneNumber
+      tags:
+      - account
+  /api/v1/account/info:
+    get:
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Account'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: GetProfile
+      tags:
+      - account
+  /api/v1/account/profile/{phoneNumber}:
+    get:
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Account'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: GetProfileByPhoneNumber
+      tags:
+      - account
+  /api/v1/account/profile/userID/{userID}:
+    get:
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Account'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: GetProfileByUserID
+      tags:
+      - account
+  /api/v1/account/reset-password:
+    put:
+      parameters:
+      - description: request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AccountResetPasswordReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: ResetPassword
+      tags:
+      - account
+  /api/v1/auth/login:
     post:
       consumes:
       - application/json
@@ -142,7 +486,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.UserLoginReq'
+          $ref: '#/definitions/dto.AccountLoginReq'
       produces:
       - application/json
       responses:
@@ -161,7 +505,7 @@ paths:
       summary: Login
       tags:
       - authentications
-  /api/auth/logout:
+  /api/v1/auth/logout:
     get:
       parameters:
       - description: Bearer token
@@ -185,15 +529,220 @@ paths:
       summary: Logout
       tags:
       - authentications
-  /api/auth/register:
+  /api/v1/chat/create:
     post:
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: id
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: CreateChat
+      tags:
+      - chat
+  /api/v1/chat/get-search:
+    get:
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: chatID
+        in: query
+        name: chatID
+        required: true
+        type: string
+      - description: messageID
+        in: query
+        name: messageID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.ChatActivity'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: GetSearch
+      tags:
+      - chat
+  /api/v1/chat/search-bkw:
+    get:
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: chatID
+        in: query
+        name: chatID
+        required: true
+        type: string
+      - description: key
+        in: query
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.ChatActivity'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: SearchByKeyWord
+      tags:
+      - chat
+  /api/v1/chat/x-to-y:
+    get:
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: oldAvatar
+        in: query
+        name: oldAvatar
+        required: true
+        type: string
+      - description: newAvatar
+        in: query
+        name: newAvatar
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: UpdateAvatarAsync
+      tags:
+      - user
+  /api/v1/group/create:
+    post:
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: request
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.UserCreateReq'
+          $ref: '#/definitions/dto.CreateGroupReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: CreateGroup
+      tags:
+      - group
+  /api/v1/group/info:
+    get:
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: groupID
+        in: query
+        name: groupID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Group'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: GetGroupInfo
+      tags:
+      - group
+  /api/v1/user/create:
+    post:
+      parameters:
+      - description: id
+        in: query
+        name: id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -212,34 +761,7 @@ paths:
       summary: CreateUser
       tags:
       - authentications
-  /api/otps/request:
-    post:
-      parameters:
-      - description: request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/dto.OtpReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-      summary: RequestOtp
-      tags:
-      - otps
-  /api/user/profile:
+  /api/v1/user/info/{id}:
     get:
       parameters:
       - description: Bearer token
@@ -253,141 +775,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.UserResp'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-      summary: GetProfile
-      tags:
-      - users
-  /api/users:
-    delete:
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UserDeleteReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-      summary: DeleteUser
-      tags:
-      - users
-    get:
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: page of paging
-        in: query
-        name: page
-        type: integer
-      - description: size of page of paging
-        in: query
-        name: page_size
-        type: integer
-      - description: name of field need to sort
-        in: query
-        name: sort
-        type: string
-      - description: sort desc or asc
-        in: query
-        name: sort_type
-        type: string
-      - description: keyword to search in model
-        in: query
-        name: search
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.UserListResp'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-      summary: GetUserList
-      tags:
-      - users
-    put:
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UserUpdateReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-      summary: UpdateUser
-      tags:
-      - users
-  /api/users/{id}:
-    get:
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.UserResp'
+            $ref: '#/definitions/entity.User'
         "400":
           description: Bad Request
           schema:
@@ -398,164 +786,5 @@ paths:
             $ref: '#/definitions/dto.HTTPResp'
       summary: GetUser
       tags:
-      - users
-  /api/users/{id}/friends/accept:
-    post:
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-      summary: AcceptFriendRequest
-      tags:
-      - users
-  /api/users/{id}/friends/reject:
-    delete:
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-      summary: RejectFriendRequest
-      tags:
-      - users
-  /api/users/{id}/friends/remove:
-    delete:
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-      summary: RemoveFriend
-      tags:
-      - users
-  /api/users/{id}/friends/request:
-    post:
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-      summary: SendFriendRequest
-      tags:
-      - users
-  /api/users/friends/suggest:
-    get:
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/dto.UserResp'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-      summary: SuggestFriend
-      tags:
-      - users
-  /api/users/reset-password:
-    put:
-      parameters:
-      - description: request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UserResetPasswordReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.HTTPResp'
-      summary: ResetPassword
-      tags:
-      - users
+      - user
 swagger: "2.0"
