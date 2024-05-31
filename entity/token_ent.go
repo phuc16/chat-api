@@ -5,12 +5,12 @@ import (
 )
 
 const (
-	AccessTokenType = "access_token"
+	AccessTokenType = "accessToken"
 )
 
 type Token struct {
 	ID          string `json:"id" bson:"id"`
-	AccountID   string `json:"accountID" bson:"user_id"`
+	AccountID   string `json:"accountID" bson:"account_id"`
 	PhoneNumber string `json:"phoneNumber" bson:"phone_number"`
 	UserID      string `json:"userID" bson:"user_id"`
 	UserName    string `json:"userName" bson:"user_name"`

@@ -10,9 +10,9 @@ const (
 )
 
 func AccountNotFound() *apperror.Error {
-	return apperror.NewError(CodeAccountNotFound, "account not found")
+	return apperror.NewError(CodeAccountNotFound, "Tài khoản không tồn tại")
 }
 
 func AccountExists() *apperror.Error {
-	return apperror.NewError(CodeAccountExists, "account exists")
+	return apperror.NewError(CodeAccountExists, "Tài khoản đã tồn tại")
 }

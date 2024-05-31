@@ -121,21 +121,21 @@ func (r *Repo) RemoveConversationFromMultiple(ctx context.Context, ids []string,
 }
 
 func (r *Repo) SearchConversation(ctx context.Context, senderID, chatID1, chatID2 string) (*entity.User, error) {
-	filter := bson.M{"id": senderID, "conversations.chatID": bson.M{"$in": []string{chatID1, chatID2}}}
+	filter := bson.M{"id": senderID, "conversations.chat_id": bson.M{"$in": []string{chatID1, chatID2}}}
 	var user entity.User
 	err := r.userColl().FindOne(ctx, filter).Decode(&user)
 	return &user, err
 }
 
 func (r *Repo) SearchSingleConversation(ctx context.Context, senderID, chatID string) (*entity.User, error) {
-	filter := bson.M{"id": senderID, "conversations.chatID": chatID}
+	filter := bson.M{"id": senderID, "conversations.chat_id": chatID}
 	var user entity.User
 	err := r.userColl().FindOne(ctx, filter).Decode(&user)
 	return &user, err
 }
 
 func (r *Repo) UpdateChatActivity(ctx context.Context, chatID string, lastUpdateAt time.Time, deliveries, reads []entity.Delivery, newTopChatActivity []entity.ChatActivity) (*mongo.UpdateResult, error) {
-	filter := bson.M{"conversations.chatID": chatID}
+	filter := bson.M{"conversations.chat_id": chatID}
 	update := bson.M{
 		"$set": bson.M{
 			"conversations.$.updated_at":          lastUpdateAt,
@@ -147,15 +147,27 @@ func (r *Repo) UpdateChatActivity(ctx context.Context, chatID string, lastUpdate
 	return r.userColl().UpdateOne(ctx, filter, update)
 }
 
-func (r *Repo) UpdateAvatarInConversation(ctx context.Context, oldAvatar, newAvatar string) (*mongo.UpdateResult, error) {
-	filter := bson.M{"conversations.chat_avatar": oldAvatar}
+func (r *Repo) UpdateAvatarInConversation(ctx context.Context, userID, newAvatar string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"conversations.id_user_or_group": userID}
 	update := bson.M{"$set": bson.M{"conversations.$.chat_avatar": newAvatar}}
 	return r.userColl().UpdateOne(ctx, filter, update)
 }
 
-func (r *Repo) UpdateAvatarInFriendRequest(ctx context.Context, oldAvatar, newAvatar string) (*mongo.UpdateResult, error) {
-	filter := bson.M{"friendRequests.user_avatar": oldAvatar}
+func (r *Repo) UpdateNameInConversation(ctx context.Context, userID, newName string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"conversations.id_user_or_group": userID}
+	update := bson.M{"$set": bson.M{"conversations.$.chat_name": newName}}
+	return r.userColl().UpdateOne(ctx, filter, update)
+}
+
+func (r *Repo) UpdateAvatarInFriendRequest(ctx context.Context, userID, newAvatar string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"friendRequests.user_id": userID}
 	update := bson.M{"$set": bson.M{"friendRequests.$.user_avatar": newAvatar}}
+	return r.userColl().UpdateOne(ctx, filter, update)
+}
+
+func (r *Repo) UpdateNameInFriendRequest(ctx context.Context, userID, newName string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"friendRequests.user_id": userID}
+	update := bson.M{"$set": bson.M{"friendRequests.$.user_name": newName}}
 	return r.userColl().UpdateOne(ctx, filter, update)
 }
 

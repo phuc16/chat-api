@@ -12,8 +12,8 @@ const (
 	accountNameKey = "phoneNumber"
 )
 const (
-	ROLE_USER  string = "account"
-	ROLE_ADMIN string = "admin"
+	ROLE_USER  string = "USER"
+	ROLE_ADMIN string = "ADMIN"
 )
 
 type Account struct {
@@ -22,6 +22,7 @@ type Account struct {
 	Pw          string    `bson:"pw" json:"pw"`
 	Type        string    `bson:"type" json:"type"`
 	Profile     Profile   `bson:"profile" json:"profile"`
+	User        User      `bson:"user,omitempty" json:"-"`
 	Role        string    `bson:"role" json:"role"`
 	Setting     Setting   `bson:"setting" json:"setting"`
 	CreatedAt   time.Time `bson:"created_at" json:"createdAt"`

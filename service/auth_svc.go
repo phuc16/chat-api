@@ -35,6 +35,7 @@ func (s *AuthService) Register(ctx context.Context, req *dto.AccountRegisterReq)
 		Type:        entity.TYPE_ACCOUNT_PERSONAL,
 		Profile: entity.Profile{
 			UserID:     utils.NewID(),
+			UserName:   "Người dùng Zalo",
 			Avatar:     "https://grn-admin.mpoint.vn/uploads/avatar-mac-dinh.png",
 			Background: "https://fptshop.com.vn/Uploads/Originals/2023/11/2/638345572887897897_anh-mac-dinh-zalo.jpg",
 		},
@@ -51,7 +52,9 @@ func (s *AuthService) Register(ctx context.Context, req *dto.AccountRegisterReq)
 		return
 	}
 	user := &entity.User{
-		ID: account.Profile.UserID,
+		ID:             account.Profile.UserID,
+		FriendRequests: []entity.FriendRequest{},
+		Conversations:  []entity.Conversation{},
 	}
 	err = s.UserRepo.SaveUser(ctx, user)
 	return

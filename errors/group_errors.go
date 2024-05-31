@@ -10,9 +10,9 @@ const (
 )
 
 func GroupNotFound() *apperror.Error {
-	return apperror.NewError(CodeGroupNotFound, "group not found")
+	return apperror.NewError(CodeGroupNotFound, "Nhóm không tồn tại")
 }
 
 func GroupExists() *apperror.Error {
-	return apperror.NewError(CodeGroupExists, "group exists")
+	return apperror.NewError(CodeGroupExists, "Nhóm đã tồn tại")
 }

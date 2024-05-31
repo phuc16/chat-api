@@ -6,6 +6,26 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetProfile godoc
+//
+//	@Summary	GetProfile
+//	@Description
+//	@Tags		account
+//	@Produce	json
+//	@Param		Authorization	header		string	true	"Bearer token"
+//	@Success	200				{object}	entity.Profile
+//	@Failure	400				{object}	dto.HTTPResp
+//	@Failure	500				{object}	dto.HTTPResp
+//	@Router		/api/v1/account/profile [get]
+func (s *Server) GetProfile(ctx *gin.Context) {
+	profile, err := s.AccountSvc.GetProfile(ctxFromGin(ctx))
+	if err != nil {
+		abortWithStatusError(ctx, 400, err)
+		return
+	}
+	ctx.AbortWithStatusJSON(200, profile)
+}
+
 // GetProfileByPhoneNumber godoc
 //
 //	@Summary	GetProfileByPhoneNumber
@@ -13,18 +33,38 @@ import (
 //	@Tags		account
 //	@Produce	json
 //	@Param		Authorization	header		string	true	"Bearer token"
-//	@Success	200				{object}	entity.Account
+//	@Success	200				{object}	entity.Profile
 //	@Failure	400				{object}	dto.HTTPResp
 //	@Failure	500				{object}	dto.HTTPResp
 //	@Router		/api/v1/account/profile/{phoneNumber} [get]
 func (s *Server) GetProfileByPhoneNumber(ctx *gin.Context) {
 	phoneNumber := ctx.Param("phoneNumber")
-	account, err := s.AccountSvc.GetProfileByPhoneNumber(ctxFromGin(ctx), phoneNumber)
+	profile, err := s.AccountSvc.GetProfileByPhoneNumber(ctxFromGin(ctx), phoneNumber)
 	if err != nil {
 		abortWithStatusError(ctx, 400, err)
 		return
 	}
-	ctx.AbortWithStatusJSON(200, account)
+	ctx.AbortWithStatusJSON(200, profile)
+}
+
+// GetSuggestFriendProfiles godoc
+//
+//	@Summary	GetSuggestFriendProfiles
+//	@Description
+//	@Tags		account
+//	@Produce	json
+//	@Param		Authorization	header		string	true	"Bearer token"
+//	@Success	200				{object}	[]entity.Profile
+//	@Failure	400				{object}	dto.HTTPResp
+//	@Failure	500				{object}	dto.HTTPResp
+//	@Router		/api/v1/account/profile/suggest [get]
+func (s *Server) GetSuggestFriendProfiles(ctx *gin.Context) {
+	profiles, err := s.AccountSvc.GetSuggestFriendProfiles(ctxFromGin(ctx))
+	if err != nil {
+		abortWithStatusError(ctx, 400, err)
+		return
+	}
+	ctx.AbortWithStatusJSON(200, profiles)
 }
 
 // GetProfileByUserID godoc
@@ -34,23 +74,23 @@ func (s *Server) GetProfileByPhoneNumber(ctx *gin.Context) {
 //	@Tags		account
 //	@Produce	json
 //	@Param		Authorization	header		string	true	"Bearer token"
-//	@Success	200				{object}	entity.Account
+//	@Success	200				{object}	entity.Profile
 //	@Failure	400				{object}	dto.HTTPResp
 //	@Failure	500				{object}	dto.HTTPResp
 //	@Router		/api/v1/account/profile/userID/{userID} [get]
 func (s *Server) GetProfileByUserID(ctx *gin.Context) {
 	userID := ctx.Param("userID")
-	account, err := s.AccountSvc.GetProfileByUserID(ctxFromGin(ctx), userID)
+	profile, err := s.AccountSvc.GetProfileByUserID(ctxFromGin(ctx), userID)
 	if err != nil {
 		abortWithStatusError(ctx, 400, err)
 		return
 	}
-	ctx.AbortWithStatusJSON(200, account)
+	ctx.AbortWithStatusJSON(200, profile)
 }
 
-// GetProfile godoc
+// GetAccountProfile godoc
 //
-//	@Summary	GetProfile
+//	@Summary	GetAccountProfile
 //	@Description
 //	@Tags		account
 //	@Produce	json
@@ -59,8 +99,8 @@ func (s *Server) GetProfileByUserID(ctx *gin.Context) {
 //	@Failure	400				{object}	dto.HTTPResp
 //	@Failure	500				{object}	dto.HTTPResp
 //	@Router		/api/v1/account/info [get]
-func (s *Server) GetProfile(ctx *gin.Context) {
-	account, err := s.AccountSvc.GetProfile(ctxFromGin(ctx))
+func (s *Server) GetAccountProfile(ctx *gin.Context) {
+	account, err := s.AccountSvc.GetAccountProfile(ctxFromGin(ctx))
 	if err != nil {
 		abortWithStatusError(ctx, 400, err)
 		return
@@ -90,6 +130,7 @@ func (s *Server) CheckPhoneNumber(ctx *gin.Context) {
 		abortWithStatusError(ctx, 400, err)
 		return
 	}
+	ctx.AbortWithStatusJSON(200, gin.H{"status": "OK"})
 }
 
 // ResetPassword godoc
@@ -114,6 +155,7 @@ func (s *Server) ResetPassword(ctx *gin.Context) {
 		abortWithStatusError(ctx, 400, err)
 		return
 	}
+	ctx.AbortWithStatusJSON(200, gin.H{"status": "OK"})
 }
 
 // ChangePassword godoc
@@ -138,6 +180,7 @@ func (s *Server) ChangePassword(ctx *gin.Context) {
 		abortWithStatusError(ctx, 400, err)
 		return
 	}
+	ctx.AbortWithStatusJSON(200, gin.H{"status": "OK"})
 }
 
 // ChangeAvatar godoc
@@ -162,4 +205,30 @@ func (s *Server) ChangeAvatar(ctx *gin.Context) {
 		abortWithStatusError(ctx, 400, err)
 		return
 	}
+	ctx.AbortWithStatusJSON(200, gin.H{"status": "OK"})
+}
+
+// ChangeProfile godoc
+//
+//	@Summary	ChangeProfile
+//	@Description
+//	@Tags		account
+//	@Produce	json
+//	@Param		request	body		dto.AccountChangeProfileReq	true	"request"
+//	@Success	200		{object}	dto.HTTPResp
+//	@Failure	400		{object}	dto.HTTPResp
+//	@Failure	500		{object}	dto.HTTPResp
+//	@Router		/api/v1/account/change-profile [put]
+func (s *Server) ChangeProfile(ctx *gin.Context) {
+	req, err := dto.AccountChangeProfileReq{}.Bind(ctx)
+	if err != nil {
+		abortWithStatusError(ctx, 400, err)
+		return
+	}
+	_, err = s.AccountSvc.ChangeProfile(ctxFromGin(ctx), req)
+	if err != nil {
+		abortWithStatusError(ctx, 400, err)
+		return
+	}
+	ctx.AbortWithStatusJSON(200, gin.H{"status": "OK"})
 }

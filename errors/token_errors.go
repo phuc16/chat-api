@@ -9,9 +9,9 @@ const (
 )
 
 func TokenNotFound() *apperror.Error {
-	return apperror.NewError(CodeTokenNotFound, "token not found")
+	return apperror.NewError(CodeTokenNotFound, "Token không tồn tại")
 }
 
 func TokenExists() *apperror.Error {
-	return apperror.NewError(CodeTokenExists, "token exists")
+	return apperror.NewError(CodeTokenExists, "Token đã tồn tại")
 }

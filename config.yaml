@@ -10,7 +10,7 @@ http:
   port: 8080
   origin:
   allow_origins:
-    - '*'
+    - 'http://localhost:3000'
   secret: "xxx"
   enable_ssl: false
   cert_file:
@@ -18,7 +18,7 @@ http:
   access_token_duration: 720
 
 db:
-  uri: "mongodb://localhost:27017/app-chat-db"
+  uri: "mongodb://hcmut:hcmut123456@app-chat-db:27017/app-chat-db?authMechanism=SCRAM-SHA-256"
   user: "hcmut"
   password: "hcmut123456"
   db_name: "app-chat-db"
@@ -30,9 +30,3 @@ otel:
     insecure: true
   metric:
     enable: false
-
-mail:
-  host: smtp.gmail.com
-  port: 587
-  user: remsokawaii1@gmail.com
-  password: prgc fsdl wgdc tttb

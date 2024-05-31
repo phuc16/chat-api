@@ -141,10 +141,11 @@ func (r *Repo) GetChatTop10(ctx context.Context, chatID string) (*entity.Chat, e
 	return &chat, err
 }
 
+// fix cho nay
 func (r *Repo) GetChatActivityFromNToM(ctx context.Context, chatID string, x int, y int) ([]entity.ChatActivity, error) {
 	pipeline := mongo.Pipeline{
 		{{"$match", bson.M{"id": chatID}}},
-		{{"$project", bson.M{"id": 0, "chat_activities": 1}}},
+		{{"$project", bson.M{"chat_activities": 1}}},
 		{{"$unwind", "$chat_activities"}},
 		{{"$replaceRoot", bson.M{"newRoot": "$chat_activities"}}},
 		{{"$sort", bson.M{"timestamp": -1}}},
@@ -163,15 +164,27 @@ func (r *Repo) GetChatActivityFromNToM(ctx context.Context, chatID string, x int
 	return activities, nil
 }
 
-func (r *Repo) UpdateAvatarInRead(ctx context.Context, oldAvatar string, newAvatar string) (*mongo.UpdateResult, error) {
-	filter := bson.M{"reads.user_avatar": oldAvatar}
+func (r *Repo) UpdateAvatarInRead(ctx context.Context, userID string, newAvatar string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"reads.user_id": userID}
 	update := bson.M{"$set": bson.M{"reads.$.user_avatar": newAvatar}}
 	return r.chatColl().UpdateOne(ctx, filter, update)
 }
 
-func (r *Repo) UpdateAvatarInDelivery(ctx context.Context, oldAvatar string, newAvatar string) (*mongo.UpdateResult, error) {
-	filter := bson.M{"deliveries.user_avatar": oldAvatar}
+func (r *Repo) UpdateNameInRead(ctx context.Context, userID string, newName string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"reads.user_id": userID}
+	update := bson.M{"$set": bson.M{"reads.$.user_name": newName}}
+	return r.chatColl().UpdateOne(ctx, filter, update)
+}
+
+func (r *Repo) UpdateAvatarInDelivery(ctx context.Context, userID string, newAvatar string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"deliveries.user_id": userID}
 	update := bson.M{"$set": bson.M{"deliveries.$.user_avatar": newAvatar}}
+	return r.chatColl().UpdateOne(ctx, filter, update)
+}
+
+func (r *Repo) UpdateNameInDelivery(ctx context.Context, userID string, newName string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"deliveries.user_id": userID}
+	update := bson.M{"$set": bson.M{"deliveries.$.user_name": newName}}
 	return r.chatColl().UpdateOne(ctx, filter, update)
 }
 

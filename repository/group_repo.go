@@ -99,21 +99,39 @@ func (r *Repo) UpdateSetting(ctx context.Context, id string, setting entity.Grou
 	return r.groupColl().UpdateOne(ctx, filter, update)
 }
 
-func (r *Repo) UpdateAvatarInOwner(ctx context.Context, oldAvatar string, newAvatar string) (*mongo.UpdateResult, error) {
-	filter := bson.M{"owner.user_avatar": oldAvatar}
+func (r *Repo) UpdateAvatarInOwner(ctx context.Context, userID string, newAvatar string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"owner.user_id": userID}
 	update := bson.M{"$set": bson.M{"owner.user_avatar": newAvatar}}
 	return r.groupColl().UpdateOne(ctx, filter, update)
 }
 
-func (r *Repo) UpdateAvatarInAdmins(ctx context.Context, oldAvatar string, newAvatar string) (*mongo.UpdateResult, error) {
-	filter := bson.M{"admin.user_avatar": oldAvatar}
+func (r *Repo) UpdateNameInOwner(ctx context.Context, userID string, newName string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"owner.user_id": userID}
+	update := bson.M{"$set": bson.M{"owner.user_name": newName}}
+	return r.groupColl().UpdateOne(ctx, filter, update)
+}
+
+func (r *Repo) UpdateAvatarInAdmins(ctx context.Context, userID string, newAvatar string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"admin.user_id": userID}
 	update := bson.M{"$set": bson.M{"admin.$.user_avatar": newAvatar}}
 	return r.groupColl().UpdateOne(ctx, filter, update)
 }
 
-func (r *Repo) UpdateAvatarInMembers(ctx context.Context, oldAvatar string, newAvatar string) (*mongo.UpdateResult, error) {
-	filter := bson.M{"members.user_avatar": oldAvatar}
+func (r *Repo) UpdateNameInAdmins(ctx context.Context, userID string, newName string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"admin.user_id": userID}
+	update := bson.M{"$set": bson.M{"admin.$.user_name": newName}}
+	return r.groupColl().UpdateOne(ctx, filter, update)
+}
+
+func (r *Repo) UpdateAvatarInMembers(ctx context.Context, userID string, newAvatar string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"members.user_id": userID}
 	update := bson.M{"$set": bson.M{"members.$.user_avatar": newAvatar}}
+	return r.groupColl().UpdateOne(ctx, filter, update)
+}
+
+func (r *Repo) UpdateNameInMembers(ctx context.Context, userID string, newName string) (*mongo.UpdateResult, error) {
+	filter := bson.M{"members.user_id": userID}
+	update := bson.M{"$set": bson.M{"members.$.user_name": newName}}
 	return r.groupColl().UpdateOne(ctx, filter, update)
 }
 

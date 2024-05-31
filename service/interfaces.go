@@ -1,6 +1,7 @@
 package service
 
 import (
+	"app/dto"
 	"app/entity"
 	"app/repository"
 	"context"
@@ -25,8 +26,10 @@ type IUserRepo interface {
 	SearchConversation(ctx context.Context, senderID, chatID1, chatID2 string) (*entity.User, error)
 	SearchSingleConversation(ctx context.Context, senderID, chatID string) (*entity.User, error)
 	UpdateChatActivity(ctx context.Context, chatID string, lastUpdateAt time.Time, deliveries, reads []entity.Delivery, newTopChatActivity []entity.ChatActivity) (*mongo.UpdateResult, error)
-	UpdateAvatarInConversation(ctx context.Context, oldAvatar, newAvatar string) (*mongo.UpdateResult, error)
-	UpdateAvatarInFriendRequest(ctx context.Context, oldAvatar, newAvatar string) (*mongo.UpdateResult, error)
+	UpdateAvatarInConversation(ctx context.Context, userID, newAvatar string) (*mongo.UpdateResult, error)
+	UpdateNameInConversation(ctx context.Context, userID, newName string) (*mongo.UpdateResult, error)
+	UpdateAvatarInFriendRequest(ctx context.Context, userID, newAvatar string) (*mongo.UpdateResult, error)
+	UpdateNameInFriendRequest(ctx context.Context, userID, newName string) (*mongo.UpdateResult, error)
 	UpdateChatNameInConversation(ctx context.Context, ids []string, chatID, chatName string) (*mongo.UpdateResult, error)
 	UpdateAvatarInConversationMultiple(ctx context.Context, ids []string, chatID, newAvatar string) (*mongo.UpdateResult, error)
 	DeleteUserByID(ctx context.Context, id string) error
@@ -42,11 +45,13 @@ type IAccountRepo interface {
 	ExecTransaction(ctx context.Context, fn func(ctx context.Context) (any, error)) (any, error)
 	SaveAccount(ctx context.Context, account *entity.Account) error
 	FindAccountByID(ctx context.Context, id string) (*entity.Account, error)
+	GetAllAccounts(ctx context.Context) ([]*entity.Account, error)
 	SearchByPhoneNumber(ctx context.Context, phoneNumber string) (*entity.Account, error)
 	ChangePassword(ctx context.Context, phoneNumber, password string) (*mongo.UpdateResult, error)
 	ChangeAvatar(ctx context.Context, phoneNumber string, profile entity.Profile) (*mongo.UpdateResult, error)
 	SearchByUserID(ctx context.Context, userID string) (*entity.Account, error)
 	DeleteAccountByID(ctx context.Context, id string) error
+	UpdateAccount(ctx context.Context, account *entity.Account) error
 }
 
 type IChatRepo interface {
@@ -67,8 +72,10 @@ type IChatRepo interface {
 	RecallMessage(ctx context.Context, chatID string, messageID string) (*mongo.UpdateResult, error)
 	GetChatTop10(ctx context.Context, chatID string) (*entity.Chat, error)
 	GetChatActivityFromNToM(ctx context.Context, chatID string, x int, y int) ([]entity.ChatActivity, error)
-	UpdateAvatarInRead(ctx context.Context, oldAvatar string, newAvatar string) (*mongo.UpdateResult, error)
-	UpdateAvatarInDelivery(ctx context.Context, oldAvatar string, newAvatar string) (*mongo.UpdateResult, error)
+	UpdateAvatarInRead(ctx context.Context, userID string, newAvatar string) (*mongo.UpdateResult, error)
+	UpdateNameInRead(ctx context.Context, userID string, newName string) (*mongo.UpdateResult, error)
+	UpdateAvatarInDelivery(ctx context.Context, userID string, newAvatar string) (*mongo.UpdateResult, error)
+	UpdateNameInDelivery(ctx context.Context, userID string, newName string) (*mongo.UpdateResult, error)
 	SearchByKeyWord(ctx context.Context, chatID string, key string) ([]entity.ChatActivity, error)
 	GetIndexOfMessageID(ctx context.Context, chatID string, messageID string) ([]repository.SearchIndexes, error)
 }
@@ -85,9 +92,12 @@ type IGroupRepo interface {
 	UpdateAvatar(ctx context.Context, id string, avatar string) (*mongo.UpdateResult, error)
 	ChangeOwner(ctx context.Context, id string, owner entity.PersonInfo) (*mongo.UpdateResult, error)
 	UpdateSetting(ctx context.Context, id string, setting entity.GroupSetting) (*mongo.UpdateResult, error)
-	UpdateAvatarInOwner(ctx context.Context, oldAvatar string, newAvatar string) (*mongo.UpdateResult, error)
-	UpdateAvatarInAdmins(ctx context.Context, oldAvatar string, newAvatar string) (*mongo.UpdateResult, error)
-	UpdateAvatarInMembers(ctx context.Context, oldAvatar string, newAvatar string) (*mongo.UpdateResult, error)
+	UpdateAvatarInOwner(ctx context.Context, userID string, newAvatar string) (*mongo.UpdateResult, error)
+	UpdateNameInOwner(ctx context.Context, userID string, newName string) (*mongo.UpdateResult, error)
+	UpdateAvatarInAdmins(ctx context.Context, userID string, newAvatar string) (*mongo.UpdateResult, error)
+	UpdateNameInAdmins(ctx context.Context, userID string, newName string) (*mongo.UpdateResult, error)
+	UpdateAvatarInMembers(ctx context.Context, userID string, newAvatar string) (*mongo.UpdateResult, error)
+	UpdateNameInMembers(ctx context.Context, userID string, newName string) (*mongo.UpdateResult, error)
 	DeleteGroupByID(ctx context.Context, id string) error
 }
 
@@ -102,10 +112,17 @@ type IVotingRepo interface {
 }
 
 type IUserSocketSvc interface {
+	AppendFriendRequests(ctx context.Context, req dto.FriendRequestAddDTO) error
+	RemoveFriendRequests(ctx context.Context, req dto.FriendRequestRemoveDTO) error
+	AcceptFriendRequests(ctx context.Context, req dto.FriendRequestAcceptDTO) error
+	Unfriend(ctx context.Context, req dto.UnfriendDTO) error
+	UpdateTypeConversation(ctx context.Context, senderID, receiverID, typeSender, typeReceiver string) error
+	AppendConversations(ctx context.Context, req dto.AppendConversationDTO, _type string) error
 	AppendConversation(ctx context.Context, userID string, conversation entity.Conversation) error
 	AppendConversationToMultiple(ctx context.Context, userID []string, conversation entity.Conversation) error
 	RemoveConversation(ctx context.Context, userID string, idChat string) error
 	RemoveConversationFromMultiple(ctx context.Context, userID []string, idChat string) error
+	UpdateConversations(ctx context.Context, chat entity.Chat) error
 	UpdateChatNameInConversation(ctx context.Context, arrID []string, chatID, chatName string) error
 	UpdateAvatarInConversation(ctx context.Context, arrID []string, chatID, newAvatar string) error
 }
@@ -113,8 +130,34 @@ type IUserSocketSvc interface {
 type IChatSocketSvc interface {
 	Create(ctx context.Context, chatID string) error
 	Delete(ctx context.Context, chatID string) error
+	AppendChat(ctx context.Context, chatID string, req dto.MessageAppendDTO) error
+	ChangeDeliveryChat(ctx context.Context, chatID string, req dto.MessageDeliveryDTO) error
+	ChangeReadChat(ctx context.Context, chatID string, req dto.MessageDeliveryDTO) error
+	AppendHiddenMessage(ctx context.Context, chatID string, req dto.MessageHiddenDTO) error
+	RecallMessage(ctx context.Context, chatID string, req dto.MessageHiddenDTO) error
+	GetChatTop10(ctx context.Context, chatID string) (*entity.Chat, error)
+	AppendVoter(ctx context.Context, req dto.AppendVoterDTO, chatID string, obj dto.MessageAppendDTO) error
+	ChangeVoting(ctx context.Context, req dto.ChangeVoterDTO, chatID string, obj dto.MessageAppendDTO) error
+	LockVoting(ctx context.Context, chatID string, req dto.MessageAppendDTO) error
+}
+type IGroupSocketSvc interface {
+	Create(ctx context.Context, arrayID []string, req dto.CreateGroupDTO) ([]string, error)
+	Delete(ctx context.Context, idChat string) ([]string, error)
+	AppendMember(ctx context.Context, req dto.AppendMemberGroupDTO) ([]string, error)
+	AppendAdmin(ctx context.Context, req dto.AppendMemberGroupDTO) ([]string, error)
+	ChangeOwner(ctx context.Context, req dto.AppendMemberGroupDTO) ([]string, error)
+	RemoveMember(ctx context.Context, req dto.AppendMemberGroupDTO) ([]string, error)
+	RemoveAdmin(ctx context.Context, req dto.AppendMemberGroupDTO) ([]string, error)
+	UpdateNameChat(ctx context.Context, req dto.ChangeNameChatGroupDTO) ([]string, error)
+	UpdateAvatar(ctx context.Context, req dto.ChangeAvatarGroupDTO) ([]string, error)
+	UpdateSettingChangeChatNameAndAvatar(ctx context.Context, req dto.UpdateSettingGroupDTO) ([]string, error)
+	UpdateSettingPinMessages(ctx context.Context, req dto.UpdateSettingGroupDTO) ([]string, error)
+	UpdateSettingSendMessages(ctx context.Context, req dto.UpdateSettingGroupDTO) ([]string, error)
+	UpdateSettingMembershipApproval(ctx context.Context, req dto.UpdateSettingGroupDTO) ([]string, error)
+	UpdateSettingCreateNewPolls(ctx context.Context, req dto.UpdateSettingGroupDTO) ([]string, error)
 }
 
 type IUpdateAsyncSvc interface {
 	UpdateAvatarAsync(ctx context.Context, oldAvatar, newAvatar string)
+	UpdateNameAsync(ctx context.Context, userID, newName string)
 }

@@ -99,6 +99,48 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/account/change-profile": {
+            "put": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "ChangeProfile",
+                "parameters": [
+                    {
+                        "description": "request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AccountChangeProfileReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/account/check-phone": {
             "post": {
                 "produces": [
@@ -149,7 +191,7 @@ const docTemplate = `{
                 "tags": [
                     "account"
                 ],
-                "summary": "GetProfile",
+                "summary": "GetAccountProfile",
                 "parameters": [
                     {
                         "type": "string",
@@ -164,6 +206,89 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/entity.Account"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/account/profile": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "GetProfile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.Profile"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/account/profile/suggest": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "GetSuggestFriendProfiles",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.Profile"
+                            }
                         }
                     },
                     "400": {
@@ -203,7 +328,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entity.Account"
+                            "$ref": "#/definitions/entity.Profile"
                         }
                     },
                     "400": {
@@ -243,7 +368,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entity.Account"
+                            "$ref": "#/definitions/entity.Profile"
                         }
                     },
                     "400": {
@@ -349,7 +474,7 @@ const docTemplate = `{
             }
         },
         "/api/v1/auth/logout": {
-            "get": {
+            "post": {
                 "produces": [
                     "application/json"
                 ],
@@ -369,6 +494,51 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/register": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentications"
+                ],
+                "summary": "Register",
+                "parameters": [
+                    {
+                        "description": "request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AccountRegisterReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -552,9 +722,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "chat"
                 ],
-                "summary": "UpdateAvatarAsync",
+                "summary": "GetChatActivityFromNToM",
                 "parameters": [
                     {
                         "type": "string",
@@ -565,15 +735,22 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "oldAvatar",
-                        "name": "oldAvatar",
+                        "description": "id",
+                        "name": "id",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "newAvatar",
-                        "name": "newAvatar",
+                        "type": "integer",
+                        "description": "x",
+                        "name": "x",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "y",
+                        "name": "y",
                         "in": "query",
                         "required": true
                     }
@@ -582,7 +759,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.HTTPResp"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.ChatActivity"
+                            }
                         }
                     },
                     "400": {
@@ -775,6 +955,60 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/user/update-avatar-account": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "UpdateAvatarAsync",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "oldAvatar",
+                        "name": "oldAvatar",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "newAvatar",
+                        "name": "newAvatar",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -805,6 +1039,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.AccountChangeProfileReq": {
+            "type": "object",
+            "properties": {
+                "birthday": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "boolean"
+                },
+                "userName": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.AccountCheckPhoneNumberReq": {
             "type": "object",
             "properties": {
@@ -814,6 +1062,17 @@ const docTemplate = `{
             }
         },
         "dto.AccountLoginReq": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AccountRegisterReq": {
             "type": "object",
             "properties": {
                 "password": {
@@ -934,9 +1193,6 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "id": {
-                    "type": "string"
-                },
                 "messageID": {
                     "type": "string"
                 },
@@ -956,6 +1212,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "userID": {
+                    "type": "string"
+                },
+                "userName": {
                     "type": "string"
                 }
             }
@@ -983,7 +1242,7 @@ const docTemplate = `{
                 "chatAvatar": {
                     "type": "string"
                 },
-                "chatId": {
+                "chatID": {
                     "type": "string"
                 },
                 "chatName": {
@@ -997,9 +1256,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/entity.Delivery"
                     }
-                },
-                "id": {
-                    "type": "string"
                 },
                 "id_UserOrGroup": {
                     "type": "string"
@@ -1028,9 +1284,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "createdAt": {
-                    "type": "string"
-                },
-                "id": {
                     "type": "string"
                 },
                 "messageID": {

@@ -30,22 +30,6 @@ func (s *Server) CreateUser(ctx *gin.Context) {
 	}
 }
 
-// // GetProfile godoc
-// //
-// //	@Summary	GetProfile
-// //	@Description
-// //	@Tags		users
-// //	@Produce	json
-// //	@Param		Authorization	header		string	true	"Bearer token"
-// //	@Success	200				{object}	dto.UserResp
-// //	@Failure	400				{object}	dto.HTTPResp
-// //	@Failure	500				{object}	dto.HTTPResp
-// //	@Router		/api/user/profile [get]
-// func (s *Server) GetProfile(ctx *gin.Context) {
-// 	user := entity.GetUserFromContext(ctxFromGin(ctx))
-// 	ctx.AbortWithStatusJSON(http.StatusOK, dto.UserResp{}.FromUser(&user))
-// }
-
 // GetUser godoc
 //
 //	@Summary	GetUser
@@ -79,7 +63,7 @@ func (s *Server) GetUser(ctx *gin.Context) {
 //	@Success	200				{object}	dto.HTTPResp
 //	@Failure	400				{object}	dto.HTTPResp
 //	@Failure	500				{object}	dto.HTTPResp
-//	@Router		/api/v1/chat/x-to-y [get]
+//	@Router		/api/v1/user/update-avatar-account [get]
 func (s *Server) UpdateAvatarAsync(ctx *gin.Context) {
 	req, err := dto.UpdateAvatarAsyncReq{}.Bind(ctx)
 	if err != nil {
@@ -91,6 +75,7 @@ func (s *Server) UpdateAvatarAsync(ctx *gin.Context) {
 		abortWithStatusError(ctx, 400, err)
 		return
 	}
+	ctx.AbortWithStatusJSON(200, gin.H{"status": "OK"})
 }
 
 // // SuggestFriend godoc

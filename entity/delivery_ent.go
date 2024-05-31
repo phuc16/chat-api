@@ -3,7 +3,6 @@ package entity
 import "time"
 
 type Delivery struct {
-	ID         string    `bson:"id" json:"id"`
 	UserID     string    `bson:"user_id" json:"userID"`
 	MessageID  string    `bson:"message_id" json:"messageID"`
 	UserAvatar string    `bson:"user_avatar" json:"userAvatar"`

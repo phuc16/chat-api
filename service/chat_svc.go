@@ -23,7 +23,10 @@ func (s *ChatService) CreateChat(ctx context.Context, req *dto.CreateChatReq) (r
 	defer span.End()
 
 	chat := entity.Chat{
-		ID: req.ID,
+		ID:             req.ID,
+		Deliveries:     []entity.Delivery{},
+		Reads:          []entity.Delivery{},
+		ChatActivities: []entity.ChatActivity{},
 	}
 	err = s.ChatRepo.SaveChat(ctx, &chat)
 	return

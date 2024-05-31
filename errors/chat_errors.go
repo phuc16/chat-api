@@ -10,11 +10,11 @@ const (
 )
 
 func ChatNotFound() *apperror.Error {
-	return apperror.NewError(CodeChatNotFound, "chat not found")
+	return apperror.NewError(CodeChatNotFound, "Hội thoại không tồn tại")
 }
 
 func ChatExists() *apperror.Error {
-	return apperror.NewError(CodeChatExists, "chat exists")
+	return apperror.NewError(CodeChatExists, "Hội thoại đã tồn tại")
 }
 
 func ChatGroupNotEnoughUser() *apperror.Error {

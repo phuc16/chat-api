@@ -10,9 +10,9 @@ const (
 )
 
 func VotingNotFound() *apperror.Error {
-	return apperror.NewError(CodeVotingNotFound, "voting not found")
+	return apperror.NewError(CodeVotingNotFound, "voting không tồn tại")
 }
 
 func VotingExists() *apperror.Error {
-	return apperror.NewError(CodeVotingExists, "voting exists")
+	return apperror.NewError(CodeVotingExists, "votingđã tồn tại")
 }

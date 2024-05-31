@@ -19,7 +19,7 @@ func GetBearerAuth(c *gin.Context) (string, bool) {
 	if auth != "" && strings.HasPrefix(auth, prefix) {
 		token = auth[len(prefix):]
 	} else {
-		token = c.Request.FormValue("access_token")
+		token = c.Request.FormValue("accessToken")
 	}
 	return token, token != ""
 }

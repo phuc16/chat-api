@@ -1,14 +1,14 @@
 package entity
 
 const (
-	ALLOW_FRIENDS  string = "friends"
-	ALLOW_EVERYONE string = "everyone"
+	ALLOW_FRIENDS  string = "FRIENDS"
+	ALLOW_EVERYONE string = "EVERYONE"
 )
 
 const (
-	SHOW_BIRTHDAY_NO  string = "no"
-	SHOW_BIRTHDAY_DMY string = "dmy"
-	SHOW_BIRTHDAY_DM  string = "dm"
+	SHOW_BIRTHDAY_NO  string = "NO"
+	SHOW_BIRTHDAY_DMY string = "DMY"
+	SHOW_BIRTHDAY_DM  string = "DM"
 )
 
 type Setting struct {

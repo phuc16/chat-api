@@ -16,12 +16,28 @@ definitions:
       newPassword:
         type: string
     type: object
+  dto.AccountChangeProfileReq:
+    properties:
+      birthday:
+        type: string
+      gender:
+        type: boolean
+      userName:
+        type: string
+    type: object
   dto.AccountCheckPhoneNumberReq:
     properties:
       phoneNumber:
         type: string
     type: object
   dto.AccountLoginReq:
+    properties:
+      password:
+        type: string
+      phoneNumber:
+        type: string
+    type: object
+  dto.AccountRegisterReq:
     properties:
       password:
         type: string
@@ -100,8 +116,6 @@ definitions:
         items:
           type: string
         type: array
-      id:
-        type: string
       messageID:
         type: string
       parentID:
@@ -115,6 +129,8 @@ definitions:
       userAvatar:
         type: string
       userID:
+        type: string
+      userName:
         type: string
     type: object
   entity.Content:
@@ -132,7 +148,7 @@ definitions:
     properties:
       chatAvatar:
         type: string
-      chatId:
+      chatID:
         type: string
       chatName:
         type: string
@@ -142,8 +158,6 @@ definitions:
         items:
           $ref: '#/definitions/entity.Delivery'
         type: array
-      id:
-        type: string
       id_UserOrGroup:
         type: string
       reads:
@@ -162,8 +176,6 @@ definitions:
   entity.Delivery:
     properties:
       createdAt:
-        type: string
-      id:
         type: string
       messageID:
         type: string
@@ -344,6 +356,33 @@ paths:
       summary: ChangePassword
       tags:
       - account
+  /api/v1/account/change-profile:
+    put:
+      parameters:
+      - description: request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AccountChangeProfileReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: ChangeProfile
+      tags:
+      - account
   /api/v1/account/check-phone:
     post:
       parameters:
@@ -394,6 +433,32 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/dto.HTTPResp'
+      summary: GetAccountProfile
+      tags:
+      - account
+  /api/v1/account/profile:
+    get:
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Profile'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
       summary: GetProfile
       tags:
       - account
@@ -411,7 +476,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entity.Account'
+            $ref: '#/definitions/entity.Profile'
         "400":
           description: Bad Request
           schema:
@@ -421,6 +486,34 @@ paths:
           schema:
             $ref: '#/definitions/dto.HTTPResp'
       summary: GetProfileByPhoneNumber
+      tags:
+      - account
+  /api/v1/account/profile/suggest:
+    get:
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.Profile'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: GetSuggestFriendProfiles
       tags:
       - account
   /api/v1/account/profile/userID/{userID}:
@@ -437,7 +530,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entity.Account'
+            $ref: '#/definitions/entity.Profile'
         "400":
           description: Bad Request
           schema:
@@ -506,7 +599,7 @@ paths:
       tags:
       - authentications
   /api/v1/auth/logout:
-    get:
+    post:
       parameters:
       - description: Bearer token
         in: header
@@ -527,6 +620,35 @@ paths:
           schema:
             $ref: '#/definitions/dto.HTTPResp'
       summary: Logout
+      tags:
+      - authentications
+  /api/v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AccountRegisterReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: Register
       tags:
       - authentications
   /api/v1/chat/create:
@@ -644,23 +766,30 @@ paths:
         name: Authorization
         required: true
         type: string
-      - description: oldAvatar
+      - description: id
         in: query
-        name: oldAvatar
+        name: id
         required: true
         type: string
-      - description: newAvatar
+      - description: x
         in: query
-        name: newAvatar
+        name: x
         required: true
-        type: string
+        type: integer
+      - description: "y"
+        in: query
+        name: "y"
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.HTTPResp'
+            items:
+              $ref: '#/definitions/entity.ChatActivity'
+            type: array
         "400":
           description: Bad Request
           schema:
@@ -669,9 +798,9 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/dto.HTTPResp'
-      summary: UpdateAvatarAsync
+      summary: GetChatActivityFromNToM
       tags:
-      - user
+      - chat
   /api/v1/group/create:
     post:
       parameters:
@@ -785,6 +914,42 @@ paths:
           schema:
             $ref: '#/definitions/dto.HTTPResp'
       summary: GetUser
+      tags:
+      - user
+  /api/v1/user/update-avatar-account:
+    get:
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: oldAvatar
+        in: query
+        name: oldAvatar
+        required: true
+        type: string
+      - description: newAvatar
+        in: query
+        name: newAvatar
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: UpdateAvatarAsync
       tags:
       - user
 swagger: "2.0"

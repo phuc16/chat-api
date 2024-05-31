@@ -10,9 +10,9 @@ const (
 )
 
 func MessageNotFound() *apperror.Error {
-	return apperror.NewError(CodeMessageNotFound, "message not found")
+	return apperror.NewError(CodeMessageNotFound, "Tin nhắn không tồn tại")
 }
 
 func MessageExists() *apperror.Error {
-	return apperror.NewError(CodeMessageExists, "message exists")
+	return apperror.NewError(CodeMessageExists, "Tin nhắn đã tồn tại")
 }

@@ -62,7 +62,13 @@ var rootCmd = &cobra.Command{
 		chatSvc := service.NewChatService(repo, repo)
 		groupSvc := service.NewGroupService(repo)
 
-		httpSrv := http.NewServer(accountSvc, authSvc, userSvc, chatSvc, groupSvc)
+		userSocketSvc := service.NewUserSocketService(repo, repo, repo)
+		chatSocketSvc := service.NewChatSocketService(repo, repo, repo, repo)
+		groupSocketSvc := service.NewGroupSocketService(repo, repo, repo, repo, chatSocketSvc, userSocketSvc)
+
+		socketHandler := service.NewWebSocketHandler(groupSocketSvc, userSocketSvc, chatSocketSvc)
+
+		httpSrv := http.NewServer(accountSvc, authSvc, userSvc, chatSvc, groupSvc, socketHandler)
 		quit := make(chan error)
 		go func() {
 			err := httpSrv.Start()

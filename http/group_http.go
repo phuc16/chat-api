@@ -29,6 +29,7 @@ func (s *Server) CreateGroup(ctx *gin.Context) {
 		abortWithStatusError(ctx, 400, err)
 		return
 	}
+	ctx.AbortWithStatusJSON(200, gin.H{"status": "OK"})
 }
 
 // GetGroupInfo godoc

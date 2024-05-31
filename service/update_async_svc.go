@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"sync"
 )
 
 type UpdateAsyncService struct {
@@ -16,65 +16,112 @@ func NewUpdateAsyncService(UserRepo IUserRepo, ChatRepo IChatRepo, GroupRepo IGr
 	return &UpdateAsyncService{UserRepo: UserRepo, ChatRepo: ChatRepo, GroupRepo: GroupRepo}
 }
 
-func (s *UpdateAsyncService) UpdateAvatarAsync(ctx context.Context, oldAvatar, newAvatar string) {
+func (s *UpdateAsyncService) UpdateAvatarAsync(ctx context.Context, userID, newAvatar string) {
+	var wg sync.WaitGroup
+
+	wg.Add(1)
 	go func() {
-		errChan := make(chan error, 7)
-
-		go func() {
-			updatedCount, err := s.UserRepo.UpdateAvatarInFriendRequest(ctx, oldAvatar, newAvatar)
-			if err != nil || updatedCount.ModifiedCount == 0 {
-				err = fmt.Errorf("UpdateAvatarInFriendRequest %v:", err)
-			}
-			errChan <- err
-		}()
-		go func() {
-			updatedCount, err := s.UserRepo.UpdateAvatarInConversation(ctx, oldAvatar, newAvatar)
-			if err != nil || updatedCount.ModifiedCount == 0 {
-				err = fmt.Errorf("UpdateAvatarInConversation %v:", err)
-			}
-			errChan <- err
-		}()
-		go func() {
-			updatedCount, err := s.ChatRepo.UpdateAvatarInDelivery(ctx, oldAvatar, newAvatar)
-			if err != nil || updatedCount.ModifiedCount == 0 {
-				err = fmt.Errorf("UpdateAvatarInDelivery %v:", err)
-			}
-			errChan <- err
-		}()
-		go func() {
-			updatedCount, err := s.ChatRepo.UpdateAvatarInRead(ctx, oldAvatar, newAvatar)
-			if err != nil || updatedCount.ModifiedCount == 0 {
-				err = fmt.Errorf("UpdateAvatarInRead %v:", err)
-			}
-			errChan <- err
-		}()
-		go func() {
-			updatedCount, err := s.GroupRepo.UpdateAvatarInOwner(ctx, oldAvatar, newAvatar)
-			if err != nil || updatedCount.ModifiedCount == 0 {
-				err = fmt.Errorf("UpdateAvatarInOwner %v:", err)
-			}
-			errChan <- err
-		}()
-		go func() {
-			updatedCount, err := s.GroupRepo.UpdateAvatarInAdmins(ctx, oldAvatar, newAvatar)
-			if err != nil || updatedCount.ModifiedCount == 0 {
-				err = fmt.Errorf("UpdateAvatarInAdmins %v:", err)
-			}
-			errChan <- err
-		}()
-		go func() {
-			updatedCount, err := s.GroupRepo.UpdateAvatarInMembers(ctx, oldAvatar, newAvatar)
-			if err != nil || updatedCount.ModifiedCount == 0 {
-				err = fmt.Errorf("UpdateAvatarInMembers %v:", err)
-			}
-			errChan <- err
-		}()
-
-		for i := 0; i < 7; i++ {
-			if err := <-errChan; err != nil {
-				log.Printf("Error updating avatar: %v\n", err)
-			}
-		}
-		close(errChan)
+		defer wg.Done()
+		_, err := s.UserRepo.UpdateAvatarInFriendRequest(ctx, userID, newAvatar)
+		log.Println(err)
 	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := s.UserRepo.UpdateAvatarInConversation(ctx, userID, newAvatar)
+		log.Println(err)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := s.ChatRepo.UpdateAvatarInDelivery(ctx, userID, newAvatar)
+		log.Println(err)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := s.ChatRepo.UpdateAvatarInRead(ctx, userID, newAvatar)
+		log.Println(err)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := s.GroupRepo.UpdateAvatarInOwner(ctx, userID, newAvatar)
+		log.Println(err)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := s.GroupRepo.UpdateAvatarInAdmins(ctx, userID, newAvatar)
+		log.Println(err)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := s.GroupRepo.UpdateAvatarInMembers(ctx, userID, newAvatar)
+		log.Println(err)
+	}()
+
+	wg.Wait()
+}
+
+func (s *UpdateAsyncService) UpdateNameAsync(ctx context.Context, userID, newName string) {
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := s.UserRepo.UpdateNameInFriendRequest(ctx, userID, newName)
+		log.Println(err)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := s.UserRepo.UpdateNameInConversation(ctx, userID, newName)
+		log.Println(err)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := s.ChatRepo.UpdateNameInDelivery(ctx, userID, newName)
+		log.Println(err)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := s.ChatRepo.UpdateNameInRead(ctx, userID, newName)
+		log.Println(err)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := s.GroupRepo.UpdateNameInOwner(ctx, userID, newName)
+		log.Println(err)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := s.GroupRepo.UpdateNameInAdmins(ctx, userID, newName)
+		log.Println(err)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := s.GroupRepo.UpdateNameInMembers(ctx, userID, newName)
+		log.Println(err)
+	}()
+
+	wg.Wait()
 }

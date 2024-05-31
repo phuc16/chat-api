@@ -26,15 +26,16 @@ import (
 )
 
 type Server struct {
-	AccountSvc *service.AccountService
-	AuthSvc    *service.AuthService
-	UserSvc    *service.UserService
-	ChatSvc    *service.ChatService
-	GroupSvc   *service.GroupService
+	AccountSvc    *service.AccountService
+	AuthSvc       *service.AuthService
+	UserSvc       *service.UserService
+	ChatSvc       *service.ChatService
+	GroupSvc      *service.GroupService
+	SocketHandler *service.WebSocketHandler
 }
 
-func NewServer(accountSvc *service.AccountService, authSvc *service.AuthService, userSvc *service.UserService, chatSvc *service.ChatService, groupSvc *service.GroupService) *Server {
-	return &Server{AccountSvc: accountSvc, AuthSvc: authSvc, UserSvc: userSvc, ChatSvc: chatSvc, GroupSvc: groupSvc}
+func NewServer(accountSvc *service.AccountService, authSvc *service.AuthService, userSvc *service.UserService, chatSvc *service.ChatService, groupSvc *service.GroupService, socketHandler *service.WebSocketHandler) *Server {
+	return &Server{AccountSvc: accountSvc, AuthSvc: authSvc, UserSvc: userSvc, ChatSvc: chatSvc, GroupSvc: groupSvc, SocketHandler: socketHandler}
 }
 
 func (s *Server) Routes(router *gin.RouterGroup) {
@@ -45,16 +46,20 @@ func (s *Server) Routes(router *gin.RouterGroup) {
 		router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 
+	router.POST("/auth/register", s.Register)
 	router.POST("/auth/login", s.Login)
-	router.GET("/auth/logout", s.Logout)
+	router.POST("/auth/logout", s.Logout)
 
+	router.GET("/account/profile", s.Authenticate, s.GetProfile)
 	router.GET("/account/profile/:phoneNumber", s.Authenticate, s.GetProfileByPhoneNumber)
+	router.GET("/account/profile/suggest", s.Authenticate, s.GetSuggestFriendProfiles)
 	router.GET("/account/profile/userID/:userID", s.Authenticate, s.GetProfileByUserID)
-	router.GET("/account/info", s.Authenticate, s.GetProfile)
+	router.GET("/account/info", s.Authenticate, s.GetAccountProfile)
 	router.POST("/account/check-phone", s.CheckPhoneNumber)
 	router.PUT("/account/reset-password", s.ResetPassword)
-	router.PUT("/account/change-password", s.ChangePassword)
-	router.PUT("/account/change-avatar", s.ChangeAvatar)
+	router.PUT("/account/change-password", s.Authenticate, s.ChangePassword)
+	router.PUT("/account/change-avatar", s.Authenticate, s.ChangeAvatar)
+	router.PUT("/account/change-profile", s.Authenticate, s.ChangeProfile)
 
 	router.POST("/user/create", s.CreateUser)
 	router.GET("/user/info/:id", s.Authenticate, s.GetUser)
@@ -65,6 +70,14 @@ func (s *Server) Routes(router *gin.RouterGroup) {
 	router.GET("/chat/search-bkw", s.Authenticate, s.SearchByKeyWord)
 	router.GET("/chat/get-search", s.Authenticate, s.SearchByKeyWord)
 
+	router.POST("/group/create", s.Authenticate, s.CreateGroup)
+	router.GET("/group/info", s.Authenticate, s.GetGroupInfo)
+}
+
+func (s *Server) Socket(router *gin.RouterGroup) {
+	router.GET("/ws/chat/:chatID", s.SocketHandler.HandleWebSocket)
+	router.GET("/ws/user/:userID", s.SocketHandler.HandleWebSocket)
+	router.GET("/ws/group", s.SocketHandler.HandleWebSocket)
 }
 
 func (s *Server) Start() (err error) {
@@ -98,7 +111,9 @@ func (s *Server) Start() (err error) {
 	app.Use(sessMiddleware)
 
 	api := app.Group("/api/v1")
+	socket := app.Group("/")
 
+	s.Socket(socket)
 	s.Routes(api)
 
 	logger.For(nil).Info(config.Cfg.HTTP.FullAddr())

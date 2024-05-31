@@ -3,8 +3,7 @@ package entity
 import "time"
 
 type Conversation struct {
-	ID                string         `bson:"id" json:"id"`
-	ChatID            string         `bson:"chat_id" json:"chatId"`
+	ChatID            string         `bson:"chat_id" json:"chatID"`
 	IDUserOrGroup     string         `bson:"id_user_or_group" json:"id_UserOrGroup"`
 	ChatName          string         `bson:"chat_name" json:"chatName"`
 	ChatAvatar        string         `bson:"chat_avatar" json:"chatAvatar"`

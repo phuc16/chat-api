@@ -3,6 +3,7 @@ package dto
 import (
 	"app/errors"
 	"app/pkg/apperror"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -50,6 +51,20 @@ type AccountChangeAvatarReq struct {
 }
 
 func (r AccountChangeAvatarReq) Bind(ctx *gin.Context) (res *AccountChangeAvatarReq, err error) {
+	err = ctx.ShouldBindJSON(&r)
+	if err != nil {
+		return nil, apperror.NewError(errors.CodeUnknownError, validationErrorToText(err))
+	}
+	return &r, nil
+}
+
+type AccountChangeProfileReq struct {
+	UserName string    `json:"userName"`
+	Gender   bool      `json:"gender"`
+	Birthday time.Time `json:"birthday"`
+}
+
+func (r AccountChangeProfileReq) Bind(ctx *gin.Context) (res *AccountChangeProfileReq, err error) {
 	err = ctx.ShouldBindJSON(&r)
 	if err != nil {
 		return nil, apperror.NewError(errors.CodeUnknownError, validationErrorToText(err))

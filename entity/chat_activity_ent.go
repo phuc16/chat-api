@@ -3,9 +3,9 @@ package entity
 import "time"
 
 type ChatActivity struct {
-	ID         string    `bson:"id" json:"id"`
 	UserID     string    `bson:"user_id" json:"userID"`
 	MessageID  string    `bson:"message_id" json:"messageID"`
+	UserName   string    `bson:"user_name" json:"userName"`
 	UserAvatar string    `bson:"user_avatar" json:"userAvatar"`
 	Timestamp  time.Time `bson:"timestamp" json:"timestamp"`
 	ParentID   string    `bson:"parent_id" json:"parentID"`

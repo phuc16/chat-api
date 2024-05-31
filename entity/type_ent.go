@@ -1,11 +1,11 @@
 package entity
 
 const (
-	TYPE_STRANGER  string = "stranger"
-	TYPE_REQUESTED string = "requested"
-	TYPE_REQUESTS  string = "requests"
-	TYPE_FRIEND    string = "friend"
-	TYPE_GROUP     string = "group"
+	TYPE_STRANGER  string = "STRANGER"
+	TYPE_REQUESTED string = "REQUESTED"
+	TYPE_REQUESTS  string = "REQUESTS"
+	TYPE_FRIEND    string = "FRIEND"
+	TYPE_GROUP     string = "GROUP"
 )
 
 const (
