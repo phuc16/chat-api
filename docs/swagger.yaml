@@ -272,6 +272,8 @@ definitions:
         type: string
       gender:
         type: boolean
+      phoneNumber:
+        type: string
       updatedAt:
         type: string
       userID:
@@ -298,6 +300,10 @@ definitions:
         type: array
       id:
         type: string
+      recentSearchProfiles:
+        items:
+          $ref: '#/definitions/entity.Profile'
+        type: array
     type: object
 info:
   contact: {}
@@ -486,6 +492,34 @@ paths:
           schema:
             $ref: '#/definitions/dto.HTTPResp'
       summary: GetProfileByPhoneNumber
+      tags:
+      - account
+  /api/v1/account/profile/recent-search:
+    get:
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.Profile'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.HTTPResp'
+      summary: GetRecentSearchProfiles
       tags:
       - account
   /api/v1/account/profile/suggest:

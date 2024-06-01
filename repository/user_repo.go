@@ -191,3 +191,23 @@ func (r *Repo) DeleteUserByID(ctx context.Context, id string) error {
 	}
 	return nil
 }
+
+func (r *Repo) GetAllRecentSearchProfiles(ctx context.Context, userID string) ([]entity.Profile, error) {
+	filter := bson.M{"id": userID}
+	var user entity.User
+	err := r.userColl().FindOne(ctx, filter).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, errors.UserNotFound()
+		}
+		return nil, err
+	}
+	return user.RecentSearchProfiles, err
+}
+
+func (r *Repo) UpdateRecentSearchProfiles(ctx context.Context, userID string, recentSearchProfiles []entity.Profile) error {
+	filter := bson.M{"id": userID}
+	update := bson.M{"$set": bson.M{"recent_search_profiles": recentSearchProfiles}}
+	_, err := r.userColl().UpdateOne(ctx, filter, update)
+	return err
+}

@@ -34,10 +34,11 @@ func (s *AuthService) Register(ctx context.Context, req *dto.AccountRegisterReq)
 		Pw:          utils.HashPassword(req.Password),
 		Type:        entity.TYPE_ACCOUNT_PERSONAL,
 		Profile: entity.Profile{
-			UserID:     utils.NewID(),
-			UserName:   "Người dùng Zalo",
-			Avatar:     "https://grn-admin.mpoint.vn/uploads/avatar-mac-dinh.png",
-			Background: "https://fptshop.com.vn/Uploads/Originals/2023/11/2/638345572887897897_anh-mac-dinh-zalo.jpg",
+			UserID:      utils.NewID(),
+			PhoneNumber: req.PhoneNumber,
+			UserName:    "Người dùng Zalo",
+			Avatar:      "https://grn-admin.mpoint.vn/uploads/avatar-mac-dinh.png",
+			Background:  "https://fptshop.com.vn/Uploads/Originals/2023/11/2/638345572887897897_anh-mac-dinh-zalo.jpg",
 		},
 		Role: entity.ROLE_USER,
 		Setting: entity.Setting{

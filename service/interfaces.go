@@ -33,7 +33,10 @@ type IUserRepo interface {
 	UpdateChatNameInConversation(ctx context.Context, ids []string, chatID, chatName string) (*mongo.UpdateResult, error)
 	UpdateAvatarInConversationMultiple(ctx context.Context, ids []string, chatID, newAvatar string) (*mongo.UpdateResult, error)
 	DeleteUserByID(ctx context.Context, id string) error
+	GetAllRecentSearchProfiles(ctx context.Context, userID string) ([]entity.Profile, error)
+	UpdateRecentSearchProfiles(ctx context.Context, userID string, recentSearchProfiles []entity.Profile) error
 }
+
 type ITokenRepo interface {
 	ExecTransaction(ctx context.Context, fn func(ctx context.Context) (any, error)) (any, error)
 	CreateToken(ctx context.Context, token *entity.Token) error

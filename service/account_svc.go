@@ -50,6 +50,10 @@ func (s *AccountService) GetProfileByPhoneNumber(ctx context.Context, phoneNumbe
 	case entity.SHOW_BIRTHDAY_NO:
 		account.Profile.Birthday = time.Date(0, 0, 0, 0, 0, 0, 0, account.Profile.Birthday.Location())
 	}
+	err = s.UpdateRecentSearchProfiles(ctx, curAccount.Profile.UserID, account.Profile)
+	if curAccount.ID == account.ID {
+		return nil, err
+	}
 	return &account.Profile, nil
 }
 
@@ -157,6 +161,49 @@ func (s *AccountService) ChangeProfile(ctx context.Context, req *dto.AccountChan
 	}
 	s.UpdateAsyncSvc.UpdateNameAsync(ctx, account.Profile.UserID, req.UserName)
 	return
+}
+
+func (s *AccountService) UpdateRecentSearchProfiles(ctx context.Context, userID string, newProfile entity.Profile) (err error) {
+	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
+	defer span.End()
+
+	recentSearchProfiles, err := s.UserRepo.GetAllRecentSearchProfiles(ctx, userID)
+	if err != nil {
+		return err
+	}
+	var newRecentSearchProfiles []entity.Profile
+	for _, profile := range recentSearchProfiles {
+		if profile.UserID != newProfile.UserID {
+			newRecentSearchProfiles = append(newRecentSearchProfiles, profile)
+		}
+	}
+	newRecentSearchProfiles = append(newRecentSearchProfiles, newProfile)
+	err = s.UserRepo.UpdateRecentSearchProfiles(ctx, userID, newRecentSearchProfiles)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *AccountService) GetRecentSearchProfiles(ctx context.Context) (res []entity.Profile, err error) {
+	ctx, span := trace.Tracer().Start(ctx, utils.GetCurrentFuncName())
+	defer span.End()
+
+	curAccount := entity.GetAccountFromContext(ctx)
+	recentSearchProfiles, err := s.UserRepo.GetAllRecentSearchProfiles(ctx, curAccount.Profile.UserID)
+
+	startIndex := 0
+	if len(recentSearchProfiles) > 3 {
+		startIndex = len(recentSearchProfiles) - 3
+	}
+	return s.ReverseProfileSlice(recentSearchProfiles[startIndex:]), nil
+}
+
+func (s *AccountService) ReverseProfileSlice(slice []entity.Profile) []entity.Profile {
+	for i, j := 0, len(slice)-1; i < j; i, j = i+1, j-1 {
+		slice[i], slice[j] = slice[j], slice[i]
+	}
+	return slice
 }
 
 func (s *AccountService) GetSuggestFriendProfiles(ctx context.Context) (res []*entity.Profile, err error) {

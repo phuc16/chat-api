@@ -52,6 +52,7 @@ func (s *Server) Routes(router *gin.RouterGroup) {
 
 	router.GET("/account/profile", s.Authenticate, s.GetProfile)
 	router.GET("/account/profile/:phoneNumber", s.Authenticate, s.GetProfileByPhoneNumber)
+	router.GET("/account/profile/recent-search", s.Authenticate, s.GetRecentSearchProfiles)
 	router.GET("/account/profile/suggest", s.Authenticate, s.GetSuggestFriendProfiles)
 	router.GET("/account/profile/userID/:userID", s.Authenticate, s.GetProfileByUserID)
 	router.GET("/account/info", s.Authenticate, s.GetAccountProfile)

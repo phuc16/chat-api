@@ -263,6 +263,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/account/profile/recent-search": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "GetRecentSearchProfiles",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.Profile"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/account/profile/suggest": {
             "get": {
                 "produces": [
@@ -1431,6 +1474,9 @@ const docTemplate = `{
                 "gender": {
                     "type": "boolean"
                 },
+                "phoneNumber": {
+                    "type": "string"
+                },
                 "updatedAt": {
                     "type": "string"
                 },
@@ -1470,6 +1516,12 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
+                },
+                "recentSearchProfiles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Profile"
+                    }
                 }
             }
         }

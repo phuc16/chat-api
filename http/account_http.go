@@ -47,6 +47,26 @@ func (s *Server) GetProfileByPhoneNumber(ctx *gin.Context) {
 	ctx.AbortWithStatusJSON(200, profile)
 }
 
+// GetRecentSearchProfiles godoc
+//
+//	@Summary	GetRecentSearchProfiles
+//	@Description
+//	@Tags		account
+//	@Produce	json
+//	@Param		Authorization	header		string	true	"Bearer token"
+//	@Success	200				{object}	[]entity.Profile
+//	@Failure	400				{object}	dto.HTTPResp
+//	@Failure	500				{object}	dto.HTTPResp
+//	@Router		/api/v1/account/profile/recent-search [get]
+func (s *Server) GetRecentSearchProfiles(ctx *gin.Context) {
+	profiles, err := s.AccountSvc.GetRecentSearchProfiles(ctxFromGin(ctx))
+	if err != nil {
+		abortWithStatusError(ctx, 400, err)
+		return
+	}
+	ctx.AbortWithStatusJSON(200, profiles)
+}
+
 // GetSuggestFriendProfiles godoc
 //
 //	@Summary	GetSuggestFriendProfiles
