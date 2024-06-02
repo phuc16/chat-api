@@ -295,7 +295,7 @@ func (s *WebSocketHandler) HandleDeleteGroup(ctx context.Context, conn *websocke
 				TGM: dto.TGM00,
 			},
 			TypeNotify: dto.TYPE_NOTIFY_FAILED}
-		s.SendMessageToClientGroup(path, sessionID, notify, "Failed | Create Group")
+		s.SendMessageToClientGroup(path, sessionID, notify, "Failed | Delete Group")
 		return
 	}
 

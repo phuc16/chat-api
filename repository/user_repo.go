@@ -110,13 +110,13 @@ func (r *Repo) AppendConversationToMultiple(ctx context.Context, ids []string, c
 
 func (r *Repo) RemoveConversation(ctx context.Context, id, chatID string) (*mongo.UpdateResult, error) {
 	filter := bson.M{"id": id}
-	update := bson.M{"$pull": bson.M{"conversations": bson.M{"chatID": chatID}}}
+	update := bson.M{"$pull": bson.M{"conversations": bson.M{"chat_id": chatID}}}
 	return r.userColl().UpdateOne(ctx, filter, update)
 }
 
 func (r *Repo) RemoveConversationFromMultiple(ctx context.Context, ids []string, chatID string) (*mongo.UpdateResult, error) {
 	filter := bson.M{"id": bson.M{"$in": ids}}
-	update := bson.M{"$pull": bson.M{"conversations": bson.M{"chatID": chatID}}}
+	update := bson.M{"$pull": bson.M{"conversations": bson.M{"chat_id": chatID}}}
 	return r.userColl().UpdateMany(ctx, filter, update)
 }
 
